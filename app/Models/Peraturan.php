@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Peraturan extends Model
+{
+    protected $table = 'peraturan';
+    protected $fillable = ['tugas', 'deskripsi'];
+}
