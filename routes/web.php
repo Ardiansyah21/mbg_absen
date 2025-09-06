@@ -9,7 +9,6 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\BajuController;
 use App\Http\Controllers\PeraturanController;
 use App\Http\Controllers\PetugasController;
-use Illuminate\Support\Facades\Artisan;
 
 
 
@@ -31,15 +30,6 @@ use Illuminate\Support\Facades\Artisan;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-
-Route::get('/run-seeder', function () {
-    Artisan::call('db:seed', [
-        '--class' => 'AdminSeeder'
-    ]);
-
-    return 'Seeder AdminSeeder sudah dijalankan!';
-});
 
 Route::get('/', [PageController::class, 'index'])->name('page');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
