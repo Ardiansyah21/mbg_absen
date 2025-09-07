@@ -257,15 +257,12 @@
         const statusMsg = document.getElementById("statusMsg");
         const resetBtn = document.getElementById('reset-btn');
         const tandaTanganInput = document.getElementById('tanda_tangan');
-
         const toggleBtn = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
 
-        toggleBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
+        toggleBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
 
-        // Scroll halus untuk navbar
+        // ================= Scroll halus navbar =================
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -291,7 +288,8 @@
             penColor: 'black'
         });
 
-        const savedTtd = sessionStorage.getItem('tanda_tangan');
+        // Ambil tanda tangan dari localStorage
+        const savedTtd = localStorage.getItem('tanda_tangan');
         if (savedTtd) {
             tandaTanganInput.value = savedTtd;
             const img = new Image();
@@ -306,20 +304,21 @@
         signaturePad.onEnd = () => {
             const data = signaturePad.toDataURL();
             tandaTanganInput.value = data;
-            sessionStorage.setItem('tanda_tangan', data);
+            localStorage.setItem('tanda_tangan', data);
         };
 
         document.getElementById('clear-signature').addEventListener('click', () => {
             signaturePad.clear();
             tandaTanganInput.value = '';
-            sessionStorage.removeItem('tanda_tangan');
+            localStorage.removeItem('tanda_tangan');
         });
 
         // ================= Notifikasi =================
         function showNotif(msg, type = 'success') {
-            let notif = document.createElement('div');
-            notif.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 
-                           ${type==='success'?'bg-green-500 text-white':'bg-red-500 text-white'}`;
+            const notif = document.createElement('div');
+            notif.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 ${
+            type==='success'?'bg-green-500 text-white':'bg-red-500 text-white'
+        }`;
             notif.textContent = msg;
             document.body.appendChild(notif);
             setTimeout(() => notif.remove(), 4000);
@@ -333,6 +332,22 @@
             statusMsg.textContent = "Klik fingerprint untuk absen masuk / keluar";
         }
 
+        // ================= Update Scanner Color =================
+        function updateScannerColor() {
+            const lastAbsensi = localStorage.getItem('last_absensi');
+            if (!lastAbsensi) {
+                scanner.style.backgroundColor = '#e5e7eb';
+                statusMsg.textContent = '';
+            } else if (lastAbsensi === 'masuk') {
+                scanner.style.backgroundColor = '#ef4444';
+                statusMsg.textContent = "⚠️ Anda belum absen keluar!";
+            } else if (lastAbsensi === 'keluar') {
+                scanner.style.backgroundColor = '#22c55e';
+                statusMsg.textContent = "✅ Anda sudah absen keluar.";
+            }
+        }
+        updateScannerColor();
+
         // ================= Submit Registrasi =================
         document.getElementById('absensi-form').addEventListener('submit', e => {
             e.preventDefault();
@@ -341,7 +356,7 @@
                 return;
             }
             tandaTanganInput.value = tandaTanganInput.value || signaturePad.toDataURL();
-            sessionStorage.setItem('tanda_tangan', tandaTanganInput.value);
+            localStorage.setItem('tanda_tangan', tandaTanganInput.value);
 
             const formData = new FormData(e.target);
             fetch(e.target.action, {
@@ -356,9 +371,9 @@
                     formDiv.classList.add('hidden');
                     fingerprintDiv.classList.remove('hidden');
                     statusMsg.textContent =
-                    "Registrasi berhasil! Klik fingerprint untuk absen.";
-                    localStorage.setItem('last_absensi',
-                    'keluar'); // default setelah registrasi
+                        "Registrasi berhasil! Klik fingerprint untuk absen.";
+                    // Jangan set last_absensi di sini
+                    updateScannerColor();
                 } else alert("Gagal registrasi: " + (data.message || "Coba lagi."));
             }).catch(err => console.error(err));
         });
@@ -370,43 +385,34 @@
             if (!selectedKaryawanId) return alert("Karyawan belum terpilih!");
 
             fetch("{{ route('absensi.izin') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        karyawan_id: selectedKaryawanId,
-                        tipe_izin: tipeIzin,
-                        tanda_tangan: tandaTanganInput.value || signaturePad.toDataURL()
-                    })
-                }).then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotif(
-                            `✅ Izin "${tipeIzin}" telah dicatat. Anda masih bisa absen masuk/keluar.`,
-                            'success');
-                        statusMsg.textContent =
-                            `✅ Izin "${tipeIzin}" dicatat. Anda masih bisa absen masuk/keluar.`;
-                        izinDiv.classList.add('hidden');
-                    } else {
-                        statusMsg.textContent =
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    karyawan_id: selectedKaryawanId,
+                    tipe_izin: tipeIzin,
+                    tanda_tangan: tandaTanganInput.value || signaturePad.toDataURL()
+                })
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    showNotif(`✅ Izin "${tipeIzin}" dicatat. Masih bisa absen masuk/keluar.`,
+                        'success');
+                    statusMsg.textContent =
+                        `✅ Izin "${tipeIzin}" dicatat. Masih bisa absen masuk/keluar.`;
+                    izinDiv.classList.add('hidden');
+                } else {
+                    statusMsg.textContent =
                         `❌ Gagal kirim izin: ${data.message || 'Coba lagi'}`;
-                        showNotif(data.message || "Gagal kirim izin.", 'error');
-                    }
-                }).catch(err => {
-                    console.error(err);
-                    statusMsg.textContent = "❌ Terjadi kesalahan saat mengirim izin.";
-                    showNotif("Terjadi kesalahan saat mengirim izin.", 'error');
-                });
+                    showNotif(data.message || "Gagal kirim izin.", 'error');
+                }
+            }).catch(err => {
+                console.error(err);
+                statusMsg.textContent = "❌ Terjadi kesalahan saat mengirim izin.";
+                showNotif("Terjadi kesalahan saat mengirim izin.", 'error');
+            });
         });
-
-        // ================= Cek status absensi terakhir =================
-        let lastAbsensi = localStorage.getItem('last_absensi');
-        if (lastAbsensi === 'masuk') {
-            scanner.style.backgroundColor = '#ef4444';
-            statusMsg.textContent = "⚠️ Anda belum absen keluar!";
-        }
 
         // ================= Fingerprint =================
         scanner.addEventListener('click', () => {
@@ -414,7 +420,14 @@
             const tandaTanganData = tandaTanganInput.value || signaturePad.toDataURL();
             if (!tandaTanganData) return alert("Tanda tangan kosong!");
             tandaTanganInput.value = tandaTanganData;
-            sessionStorage.setItem('tanda_tangan', tandaTanganData);
+            localStorage.setItem('tanda_tangan', tandaTanganData);
+
+            // Jika sudah absen keluar, klik lagi reset tombol
+            if (localStorage.getItem('last_absensi') === 'keluar') {
+                localStorage.removeItem('last_absensi');
+                updateScannerColor();
+                return;
+            }
 
             if (!navigator.geolocation) return alert("Geolocation tidak didukung browser ini.");
             statusMsg.textContent = "⏳ Mengambil lokasi...";
@@ -425,14 +438,14 @@
 
                 const kantorLat = -6.691640391234676;
                 const kantorLng = 106.88689131829916;
-                const radiusM = 20;
+                const radiusM = 30;
 
                 function getDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371000;
                     const dLat = (lat2 - lat1) * Math.PI / 180;
                     const dLon = (lon2 - lon1) * Math.PI / 180;
-                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) *
-                        Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math
+                        .cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
                     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
                     return R * c;
                 }
@@ -451,46 +464,44 @@
                     `⏳ Mengirim absensi... (jarak ${Math.round(distance)} m)`;
 
                 fetch("{{ route('absensi.fingerprint') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector(
-                                'meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            karyawan_id: selectedKaryawanId,
-                            tanda_tangan: tandaTanganData,
-                            lat,
-                            lng
-                        })
-                    }).then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            const tipe = data.data.waktu_keluar ? 'keluar' : 'masuk';
-                            if (tipe === 'masuk') {
-                                scanner.style.backgroundColor = '#ef4444';
-                                localStorage.setItem('last_absensi', 'masuk');
-                                showNotif("✅ Absen masuk berhasil, belum absen keluar!",
-                                    'success');
-                            } else {
-                                scanner.style.backgroundColor = '#22c55e';
-                                localStorage.setItem('last_absensi', 'keluar');
-                                showNotif("✅ Absen keluar berhasil!", 'success');
-                            }
-                            statusMsg.textContent =
-                                `✅ ${data.message} (jarak ${Math.round(distance)} m)`;
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector(
+                            'meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        karyawan_id: selectedKaryawanId,
+                        tanda_tangan: tandaTanganData,
+                        lat,
+                        lng
+                    })
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        const tipe = data.data.waktu_keluar ? 'keluar' : 'masuk';
+                        if (tipe === 'masuk') {
+                            localStorage.setItem('last_absensi', 'masuk');
+                            showNotif("✅ Absen masuk berhasil, belum absen keluar!",
+                                'success');
                         } else {
-                            statusMsg.textContent =
-                                `❌ ${data.message || "Gagal mencatat absensi."}`;
-                            scanner.style.backgroundColor = '#ef4444';
-                            showNotif(data.message || "Gagal mencatat absensi.", 'error');
+                            localStorage.setItem('last_absensi', 'keluar');
+                            showNotif("✅ Absen keluar berhasil!", 'success');
                         }
-                    }).catch(err => {
-                        console.error(err);
-                        statusMsg.textContent = "❌ Gagal mengirim data absensi.";
+                        updateScannerColor();
+                        statusMsg.textContent =
+                            `✅ ${data.message} (jarak ${Math.round(distance)} m)`;
+                    } else {
+                        statusMsg.textContent =
+                            `❌ ${data.message || "Gagal mencatat absensi."}`;
                         scanner.style.backgroundColor = '#ef4444';
-                        showNotif("Gagal mengirim data absensi.", 'error');
-                    });
+                        showNotif(data.message || "Gagal mencatat absensi.", 'error');
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    statusMsg.textContent = "❌ Gagal mengirim data absensi.";
+                    scanner.style.backgroundColor = '#ef4444';
+                    showNotif("Gagal mengirim data absensi.", 'error');
+                });
 
             }, err => {
                 statusMsg.textContent =
@@ -513,10 +524,10 @@
             document.getElementById('karyawan_id').value = '';
             signaturePad.clear();
             tandaTanganInput.value = '';
-            sessionStorage.removeItem('tanda_tangan');
+            localStorage.removeItem('tanda_tangan');
             localStorage.removeItem('last_absensi');
             statusMsg.textContent = '';
-            scanner.style.backgroundColor = '#e5e7eb';
+            updateScannerColor();
 
             fetch("{{ route('absensi.reset') }}", {
                 method: 'POST',
@@ -527,8 +538,6 @@
         });
     });
     </script>
-
-
 
 
 
