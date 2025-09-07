@@ -113,7 +113,7 @@ public function fingerprint(Request $request)
             // update record yang sama = keluar
             $absensi->update([
                 'waktu_keluar' => $now->toTimeString(),
-                'tanda_tangan' => $tanda_tangan,
+    'tanda_tangan' => $tanda_tangan ?? $absensi->tanda_tangan, // pakai tanda tangan masuk jika request kosong
                 'latitude'     => $lat_user,
                 'longitude'    => $lng_user,
             ]);
