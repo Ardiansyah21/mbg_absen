@@ -3,6 +3,7 @@
 @section('content')
 <div class="container mx-auto p-4">
 
+    {{-- Alert sukses --}}
     @if(session('success'))
     <div class="mb-4 p-4 rounded bg-green-100 border border-green-400 text-green-700 flex justify-between items-center">
         <span>{{ session('success') }}</span>
@@ -10,6 +11,7 @@
     </div>
     @endif
 
+    {{-- Alert error --}}
     @if(session('error'))
     <div
         class="mb-4 p-4 rounded bg-yellow-100 border border-yellow-400 text-yellow-700 flex justify-between items-center">
@@ -18,6 +20,7 @@
     </div>
     @endif
 
+    {{-- Alert validasi --}}
     @if($errors->any())
     <div class="mb-4 p-4 rounded bg-red-100 border border-red-400 text-red-700">
         <ul class="list-disc pl-5">
@@ -52,7 +55,6 @@
                 class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded shadow">
                 Export PDF
             </a>
-
         </div>
     </div>
 
@@ -125,15 +127,24 @@
                     <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
                     <select name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2" required>
                         <option value="">-- Pilih Tugas --</option>
-                        @php
-                        $tugasOptions = ['Persiapan','Memasak','Packing','Distribusi','Kebersihan','Pencucian'];
-                        @endphp
-                        @foreach($tugasOptions as $tugas)
-                        @php
-                        $disabled = $peraturans->pluck('tugas')->contains($tugas) ? 'disabled' : '';
-                        @endphp
-                        <option value="{{ $tugas }}" {{ $disabled }}>{{ $tugas }}</option>
-                        @endforeach
+                        <optgroup label="Tugas Utama">
+                            <option value="Persiapan">Persiapan</option>
+                            <option value="Memasak">Memasak</option>
+                            <option value="Packing">Packing</option>
+                            <option value="Distribusi">Distribusi</option>
+                            <option value="Kebersihan">Kebersihan</option>
+                            <option value="Pencucian">Pencucian</option>
+                            <option value="Asisten Lapangan">Asisten Lapangan</option>
+                        </optgroup>
+                        <optgroup label="Koordinator">
+                            <option value="Koordinator Persiapan">Koordinator Persiapan</option>
+                            <option value="Koordinator Memasak">Koordinator Memasak</option>
+                            <option value="Koordinator Packing">Koordinator Packing</option>
+                            <option value="Koordinator Distribusi">Koordinator Distribusi</option>
+                            <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
+                            <option value="Koordinator Pencucian">Koordinator Pencucian</option>
+                            <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div>
@@ -164,19 +175,33 @@
 
         <form id="formEdit" method="POST">
             @csrf
-            @method('POST') {{-- gunakan POST karena route update juga POST --}}
+            @method('POST') {{-- pakai POST karena route update pakai POST --}}
             <div class="space-y-4">
                 <div>
                     <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
                     <select id="editTugas" name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2"
                         required>
                         <option value="">-- Pilih Tugas --</option>
-                        @foreach($tugasOptions as $tugas)
-                        <option value="{{ $tugas }}">{{ $tugas }}</option>
-                        @endforeach
+                        <optgroup label="Tugas Utama">
+                            <option value="Persiapan">Persiapan</option>
+                            <option value="Memasak">Memasak</option>
+                            <option value="Packing">Packing</option>
+                            <option value="Distribusi">Distribusi</option>
+                            <option value="Kebersihan">Kebersihan</option>
+                            <option value="Pencucian">Pencucian</option>
+                            <option value="Asisten Lapangan">Asisten Lapangan</option>
+                        </optgroup>
+                        <optgroup label="Koordinator">
+                            <option value="Koordinator Persiapan">Koordinator Persiapan</option>
+                            <option value="Koordinator Memasak">Koordinator Memasak</option>
+                            <option value="Koordinator Packing">Koordinator Packing</option>
+                            <option value="Koordinator Distribusi">Koordinator Distribusi</option>
+                            <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
+                            <option value="Koordinator Pencucian">Koordinator Pencucian</option>
+                            <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
+                        </optgroup>
                     </select>
                 </div>
-
                 <div>
                     <label class="block text-gray-700 font-semibold mb-1">Peraturan</label>
                     <textarea id="editDeskripsi" name="deskripsi" rows="5"

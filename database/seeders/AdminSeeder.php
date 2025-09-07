@@ -4,18 +4,17 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Hash; // <- ini yang kurang
 
 class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        // cek apakah user sudah ada
-        if(!User::where('email', 'admin@domain.com')->exists()) {
+        if(!User::where('email', 'AdminFatimah@sppg.com')->exists()) {
             User::create([
                 'name' => 'Admin SPPG',
-                'email' => 'admin@domain.com',       // email baru
-                'password' => Hash::make('Admin123!'), // password baru, aman karena di-hash
+                'email' => 'AdminFatimah@sppg.com',
+                'password' => Hash::make('Fatimah123!'), // password aman
                 'role' => 'admin',
             ]);
         }

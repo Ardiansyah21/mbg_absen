@@ -10,9 +10,6 @@
     </div>
     @endif
 
-
-
-
     <!-- Header dengan Search + Button -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h1 class="text-2xl font-bold text-blue-500">Daftar Pengguna</h1>
@@ -21,7 +18,6 @@
             <!-- Search Bar -->
             <div class="relative w-full md:w-64">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <!-- Icon Search -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -41,9 +37,10 @@
                 class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded shadow">
                 Export PDF
             </a>
-
         </div>
     </div>
+
+    <!-- Table -->
     <div class="mb-12">
         <div class="overflow-x-auto rounded-2xl shadow-md shadow-sky-200/70">
             <table class="min-w-full text-sm text-left text-gray-700">
@@ -76,17 +73,15 @@
                                 </button>
                             </form>
                         </td>
-
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     </div>
-
-
 </div>
 
+<!-- Modal Tambah -->
 <div id="modalForm" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-xl shadow-sky-500 w-full max-w-lg p-6 border-t-4 border-sky-500">
         <div class="flex justify-between items-center mb-4">
@@ -97,24 +92,32 @@
         <form action="{{ route('karyawan.store') }}" method="POST">
             @csrf
             <div class="space-y-4">
-                <!-- Nama -->
                 <div>
                     <label class="block text-gray-700 font-semibold mb-1">Nama</label>
                     <input type="text" name="nama" class="w-full border border-gray-300 rounded-md px-4 py-2"
                         placeholder="Masukkan nama" required>
                 </div>
 
-                <!-- Tugas -->
                 <div>
                     <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
                     <select name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2" required>
                         <option value="">-- Pilih Tugas --</option>
+                        <!-- Tugas utama -->
                         <option value="Persiapan">Persiapan</option>
                         <option value="Memasak">Memasak</option>
                         <option value="Packing">Packing</option>
                         <option value="Distribusi">Distribusi</option>
                         <option value="Kebersihan">Kebersihan</option>
                         <option value="Pencucian">Pencucian</option>
+                        <option value="Asisten Lapangan">Asisten Lapangan</option>
+                        <!-- Koordinator -->
+                        <option value="Koordinator Persiapan">Koordinator Persiapan</option>
+                        <option value="Koordinator Memasak">Koordinator Memasak</option>
+                        <option value="Koordinator Packing">Koordinator Packing</option>
+                        <option value="Koordinator Distribusi">Koordinator Distribusi</option>
+                        <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
+                        <option value="Koordinator Pencucian">Koordinator Pencucian</option>
+                        <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
                     </select>
                 </div>
             </div>
@@ -128,7 +131,6 @@
         </form>
     </div>
 </div>
-
 
 <!-- Modal Edit -->
 <div id="modalEdit" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
@@ -155,12 +157,22 @@
                     <select id="editTugas" name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2"
                         required>
                         <option value="">-- Pilih Tugas --</option>
+                        <!-- Tugas utama -->
                         <option value="Persiapan">Persiapan</option>
                         <option value="Memasak">Memasak</option>
                         <option value="Packing">Packing</option>
                         <option value="Distribusi">Distribusi</option>
                         <option value="Kebersihan">Kebersihan</option>
                         <option value="Pencucian">Pencucian</option>
+                        <option value="Asisten Lapangan">Asisten Lapangan</option>
+                        <!-- Koordinator -->
+                        <option value="Koordinator Persiapan">Koordinator Persiapan</option>
+                        <option value="Koordinator Memasak">Koordinator Memasak</option>
+                        <option value="Koordinator Packing">Koordinator Packing</option>
+                        <option value="Koordinator Distribusi">Koordinator Distribusi</option>
+                        <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
+                        <option value="Koordinator Pencucian">Koordinator Pencucian</option>
+                        <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
                     </select>
                 </div>
             </div>
@@ -175,10 +187,6 @@
     </div>
 </div>
 
-
-
-
-
 <script>
 function openModal() {
     document.getElementById('modalForm').classList.remove('hidden');
@@ -190,7 +198,7 @@ function closeModal() {
 
 function editData(data) {
     const form = document.getElementById('formEdit');
-    form.action = `/karyawan/${data.id}`; // route update
+    form.action = `/karyawan/${data.id}`;
 
     document.getElementById('editId').value = data.id;
     document.getElementById('editName').value = data.nama;
@@ -210,5 +218,4 @@ function confirmDelete(event, nama) {
     }
 }
 </script>
-
 @endsection

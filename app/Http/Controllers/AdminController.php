@@ -10,44 +10,66 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-
-
 class AdminController extends Controller
 {
     /**
      * Dashboard utama admin
      */
-  public function index(Request $request)
+    public function index(Request $request)
     {
-        // Tanggal hari ini
         $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
-        // Daftar tugas tetap dan warna card
+        // Daftar tugas / jabatan lengkap
         $tugasList = [
-            'Persiapan'   => 'blue',
-            'Memasak'     => 'red',
-            'Packing'     => 'green',
-            'Distribusi'  => 'yellow',
-            'Kebersihan'  => 'purple',
-            'Pencucian'   => 'indigo',
+            'Persiapan',
+            'Memasak',
+            'Packing',
+            'Distribusi',
+            'Kebersihan',
+            'Pencucian',
+            'Asisten Lapangan',
+            'Koordinator Persiapan',
+            'Koordinator Memasak',
+            'Koordinator Packing',
+            'Koordinator Distribusi',
+            'Koordinator Kebersihan',
+            'Koordinator Pencucian',
+            'Koordinator Asisten Lapangan',
         ];
 
-        // Ambil jumlah karyawan per tugas
+        // Mapping warna unik Tailwind
+        $warnaClasses = [
+            'Persiapan' => 'blue',
+            'Memasak' => 'red',
+            'Packing' => 'green',
+            'Distribusi' => 'yellow',
+            'Kebersihan' => 'purple',
+            'Pencucian' => 'indigo',
+            'Asisten Lapangan' => 'blue',
+            'Koordinator Persiapan' => 'green',
+            'Koordinator Memasak' => 'yellow',
+            'Koordinator Packing' => 'purple',
+            'Koordinator Distribusi' => 'indigo',
+            'Koordinator Kebersihan' => 'blue',
+            'Koordinator Pencucian' => 'red',
+            'Koordinator Asisten Lapangan' => 'green',
+        ];
+
+        // Hitung jumlah karyawan per tugas
         $jumlahPerTugas = [];
-        foreach ($tugasList as $tugas => $warna) {
+        foreach ($tugasList as $tugas) {
             $jumlahPerTugas[] = [
-                'tugas' => $tugas,
-                'warna' => $warna,
-                'jumlah' => Karyawan::where('tugas', $tugas)->count()
+                'tugas'  => $tugas,
+                'warna'  => $warnaClasses[$tugas] ?? 'gray',
+                'jumlah' => Karyawan::where('tugas', $tugas)->count(),
             ];
         }
 
-        // Ringkasan absensi hari ini
         $totalKaryawan = Karyawan::count();
-        $jumlahHadir = Karyawan::whereHas('absensis', function($q) use($tanggal) {
-            $q->whereDate('tanggal', $tanggal)
-              ->where('status', 'Hadir');
+        $jumlahHadir = Karyawan::whereHas('absensis', function ($q) use ($tanggal) {
+            $q->whereDate('tanggal', $tanggal)->where('status', 'Hadir');
         })->count();
+
         $jumlahTidakHadir = $totalKaryawan - $jumlahHadir;
 
         return view('admin.dashboard', compact(
@@ -63,196 +85,124 @@ class AdminController extends Controller
      */
     public function absen(Request $request)
     {
-        // Ambil tanggal dari request (default hari ini)
         $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
         $bulan = Carbon::parse($tanggal)->month;
         $tahun = Carbon::parse($tanggal)->year;
 
-        // Ambil semua karyawan beserta absensi
         $karyawanList = Karyawan::with('absensis')->orderBy('nama')->get();
 
-        // Pisahkan karyawan yang sudah dan belum absen hari ini
-        $sudahAbsen = $karyawanList->filter(function($k) use($tanggal) {
+        $sudahAbsen = $karyawanList->filter(function ($k) use ($tanggal) {
             return $k->absensis->where('tanggal', $tanggal)->isNotEmpty();
         });
 
-        $belumAbsen = $karyawanList->filter(function($k) use($tanggal) {
+        $belumAbsen = $karyawanList->filter(function ($k) use ($tanggal) {
             return $k->absensis->where('tanggal', $tanggal)->isEmpty();
         });
 
-        // Buat rekap bulanan
-        $rekapAbsensi = $karyawanList->map(function($karyawan) use($bulan, $tahun) {
-
+        $rekapAbsensi = $karyawanList->map(function ($karyawan) use ($bulan, $tahun) {
             $totalHari = Carbon::parse("$tahun-$bulan-01")->daysInMonth;
 
-            // Ambil absensi bulan ini
-            $absensiBulanIni = $karyawan->absensis->filter(function($a) use($bulan, $tahun) {
-                return Carbon::parse($a->tanggal)->month == $bulan
-                       && Carbon::parse($a->tanggal)->year == $tahun;
+            $absensiBulanIni = $karyawan->absensis->filter(function ($a) use ($bulan, $tahun) {
+                return Carbon::parse($a->tanggal)->month == $bulan &&
+                       Carbon::parse($a->tanggal)->year == $tahun;
             });
 
-            // Hitung jumlah hadir, case-insensitive, trim spasi
-            $jumlahHadir = $absensiBulanIni->filter(function($a){
+            $jumlahHadir = $absensiBulanIni->filter(function ($a) {
                 return Str::lower(trim($a->status)) === 'hadir';
             })->count();
 
             $jumlahTidakHadir = $totalHari - $jumlahHadir;
 
-            return (object)[
-                'nama' => $karyawan->nama,
-                'jumlah_hadir' => $jumlahHadir,
-                'jumlah_tidak_hadir' => $jumlahTidakHadir,
-                'total_hari' => $totalHari,
+            return (object) [
+                'nama'              => $karyawan->nama,
+                'tugas'             => $karyawan->tugas,
+                'jumlah_hadir'      => $jumlahHadir,
+                'jumlah_tidak_hadir'=> $jumlahTidakHadir,
+                'total_hari'        => $totalHari,
             ];
         });
 
-        // Kirim semua data ke view
-        return view('admin.absendata', [
-            'tanggal'      => $tanggal,
-            'karyawanList' => $karyawanList,
-            'sudahAbsen'   => $sudahAbsen,
-            'belumAbsen'   => $belumAbsen,
-            'rekapAbsensi' => $rekapAbsensi,
-        ]);
+        return view('admin.absendata', compact(
+            'tanggal',
+            'karyawanList',
+            'sudahAbsen',
+            'belumAbsen',
+            'rekapAbsensi'
+        ));
     }
 
+    /**
+     * Export PDF Rekap Bulanan
+     */
+    public function exportPdf(Request $request)
+    {
+        $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
-    
-public function exportPdf(Request $request)
-{
-    // Ambil tanggal dari request atau default hari ini
-    $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
+        $bulan = Carbon::parse($tanggal)->month;
+        $tahun = Carbon::parse($tanggal)->year;
 
-    $bulan = Carbon::parse($tanggal)->month;
-    $tahun = Carbon::parse($tanggal)->year;
+        $karyawanList = Karyawan::with('absensis')->orderBy('nama')->get();
 
-    // Ambil semua karyawan beserta absensi
-    $karyawanList = Karyawan::with('absensis')->orderBy('nama')->get();
+        $rekapAbsensi = $karyawanList->map(function ($karyawan) use ($bulan, $tahun) {
+            $totalHari = Carbon::parse("$tahun-$bulan-01")->daysInMonth;
 
-    // Buat rekap bulanan
-    $rekapAbsensi = $karyawanList->map(function($karyawan) use($bulan, $tahun) {
+            $absensiBulanIni = $karyawan->absensis->filter(function ($a) use ($bulan, $tahun) {
+                return Carbon::parse($a->tanggal)->month == $bulan &&
+                       Carbon::parse($a->tanggal)->year == $tahun;
+            });
 
-        $totalHari = Carbon::parse("$tahun-$bulan-01")->daysInMonth;
+            $jumlahHadir = $absensiBulanIni->filter(function ($a) {
+                return strtolower(trim($a->status)) === 'hadir';
+            })->count();
 
-        // Ambil absensi bulan ini
-        $absensiBulanIni = $karyawan->absensis->filter(function($a) use($bulan, $tahun) {
-            return Carbon::parse($a->tanggal)->month == $bulan
-                   && Carbon::parse($a->tanggal)->year == $tahun;
+            $jumlahTidakHadir = $totalHari - $jumlahHadir;
+
+            return (object) [
+                'nama'              => $karyawan->nama,
+                'tugas'             => $karyawan->tugas,
+                'jumlah_hadir'      => $jumlahHadir,
+                'jumlah_tidak_hadir'=> $jumlahTidakHadir,
+                'total_hari'        => $totalHari,
+            ];
         });
 
-        // Hitung jumlah hadir
-        $jumlahHadir = $absensiBulanIni->filter(function($a){
-            return strtolower(trim($a->status)) === 'hadir';
-        })->count();
+        $pdf = Pdf::loadView('admin.pdf.rekap', [
+            'rekapAbsensi' => $rekapAbsensi,
+            'tanggal'      => $tanggal,
+        ])->setPaper('a4', 'landscape');
 
-        $jumlahTidakHadir = $totalHari - $jumlahHadir;
-
-        return (object)[
-            'nama' => $karyawan->nama,
-            'jumlah_hadir' => $jumlahHadir,
-            'jumlah_tidak_hadir' => $jumlahTidakHadir,
-            'total_hari' => $totalHari,
-        ];
-    });
-
-    // Generate PDF A4 landscape
-    $pdf = Pdf::loadView('admin.pdf.rekap', [
-        'rekapAbsensi' => $rekapAbsensi,
-        'tanggal' => $tanggal
-    ])->setPaper('a4', 'landscape')->setOptions([
-        'margin-top' => 10,
-        'margin-bottom' => 10,
-        'margin-left' => 10,
-        'margin-right' => 10,
-    ]);
-
-    return $pdf->stream('rekap-absensi-' . Carbon::parse($tanggal)->format('F-Y') . '.pdf');
-}
-
-public function exportPDFPerHari(Request $request)
-{
-    $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
-
-    // Ambil semua karyawan beserta absensi hari ini
-    $karyawanList = Karyawan::with(['absensis' => function($q) use($tanggal) {
-        $q->whereDate('tanggal', $tanggal);
-    }])->orderBy('nama')->get();
-
-    $rekapHarian = $karyawanList->map(function($karyawan) {
-        $absensi = $karyawan->absensis->first();
-        
-        // Gunakan base64 langsung dari database
-        $ttdBase64 = $absensi && $absensi->tanda_tangan ? $absensi->tanda_tangan : null;
-
-        return (object)[
-            'nama' => $karyawan->nama,
-            'status' => $absensi ? $absensi->status : 'Belum Absen',
-            'waktu_masuk' => $absensi ? $absensi->waktu_masuk : '-',
-            'waktu_keluar' => $absensi ? $absensi->waktu_keluar : '-',
-            'tanda_tangan' => $ttdBase64,
-        ];
-    });
-
-    // Load view PDF
-    $pdf = PDF::loadView('admin.absen-harian-pdf', compact('rekapHarian', 'tanggal'))
-              ->setPaper('a4', 'portrait')
-              ->setOptions([
-                  'margin-top' => 10,
-                  'margin-bottom' => 10,
-                  'margin-left' => 10,
-                  'margin-right' => 10,
-              ]);
-
-    // Download PDF
-    return $pdf->download("rekap_absen_" . Carbon::parse($tanggal)->format('Y-m-d') . ".pdf");
-}
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return $pdf->stream('rekap-absensi-' . Carbon::parse($tanggal)->format('F-Y') . '.pdf');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Export PDF Rekap Per Hari
      */
-    public function store(Request $request)
+    public function exportPDFPerHari(Request $request)
     {
-        //
-    }
+        $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Admin $admin)
-    {
-        //
-    }
+        $karyawanList = Karyawan::with(['absensis' => function ($q) use ($tanggal) {
+            $q->whereDate('tanggal', $tanggal);
+        }])->orderBy('nama')->get();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Admin $admin)
-    {
-        //
-    }
+        $rekapHarian = $karyawanList->map(function ($karyawan) {
+            $absensi = $karyawan->absensis->first();
+            $ttdBase64 = $absensi && $absensi->tanda_tangan ? $absensi->tanda_tangan : null;
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Admin $admin)
-    {
-        //
-    }
+            return (object) [
+                'nama'         => $karyawan->nama,
+                'tugas'        => $karyawan->tugas,
+                'status'       => $absensi ? $absensi->status : 'Belum Absen',
+                'waktu_masuk'  => $absensi ? $absensi->waktu_masuk : '-',
+                'waktu_keluar' => $absensi ? $absensi->waktu_keluar : '-',
+                'tanda_tangan' => $ttdBase64,
+            ];
+        });
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Admin $admin)
-    {
-        //
+        $pdf = Pdf::loadView('admin.absen-harian-pdf', compact('rekapHarian', 'tanggal'))
+                  ->setPaper('a4', 'portrait');
+
+        return $pdf->download("rekap_absen_" . Carbon::parse($tanggal)->format('Y-m-d') . ".pdf");
     }
 }

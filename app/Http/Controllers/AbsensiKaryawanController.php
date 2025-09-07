@@ -73,7 +73,7 @@ public function fingerprint(Request $request)
         // Lokasi kantor
         $lat_office = -6.691640391234676; 
         $lng_office = 106.88689131829916;
-        $radius_m  = 5; // meter
+        $radius_m  = 20; // meter
 
         $distance = $this->haversineDistance($lat_office, $lng_office, $lat_user, $lng_user);
 

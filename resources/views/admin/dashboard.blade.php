@@ -8,8 +8,8 @@
         <h1 class="text-2xl font-bold text-black">Hallo Selamat Datang</h1>
     </div>
 
-
-    <!-- Cards Tugas -->
+    <!-- Cards Tugas & Jabatan -->
+    <h2 class="text-xl font-bold text-gray-700 mb-4">👷 Jumlah Per Tugas / Jabatan</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
         @foreach($jumlahPerTugas as $data)
         <div
@@ -23,18 +23,30 @@
 
             <div>
                 <h3 class="text-sm font-semibold mb-2">{{ $data['tugas'] }}</h3>
-                <p class="text-xl font-bold">{{ $data['jumlah'] }} Karyawan</p>
+                <p class="text-xl font-bold">{{ $data['jumlah'] }} Orang</p>
             </div>
 
-            <div class="text-5xl">
+            <div class="text-4xl">
                 @switch($data['tugas'])
+                {{-- Tugas Utama --}}
                 @case('Persiapan') 🍳 @break
                 @case('Memasak') 🔥 @break
                 @case('Packing') 📦 @break
                 @case('Distribusi') 🚚 @break
                 @case('Kebersihan') 🧹 @break
                 @case('Pencucian') 🧼 @break
-                @default 👷‍♂️
+                @case('Asisten Lapangan') 👷‍♂️ @break
+
+                {{-- Koordinator --}}
+                @case('Koordinator Persiapan') 🧑‍🍳 @break
+                @case('Koordinator Memasak') 👨‍🍳 @break
+                @case('Koordinator Packing') 📦✨ @break
+                @case('Koordinator Distribusi') 🚛✨ @break
+                @case('Koordinator Kebersihan') 🧽✨ @break
+                @case('Koordinator Pencucian') 🪣✨ @break
+                @case('Koordinator Asisten Lapangan') 👷‍♀️✨ @break
+
+                @default 👤
                 @endswitch
             </div>
         </div>

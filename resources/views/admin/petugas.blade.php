@@ -10,18 +10,14 @@
     </div>
     @endif
 
-
-
-
     <!-- Header dengan Search + Button -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        <h1 class="text-2xl font-bold text-blue-500">Daftar Jadawal Petugas</h1>
+        <h1 class="text-2xl font-bold text-blue-500">Daftar Jadwal Petugas</h1>
 
         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
             <!-- Search Bar -->
             <div class="relative w-full md:w-64">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <!-- Icon Search -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -43,12 +39,32 @@
             </a>
         </div>
     </div>
+
     @php
-    $tugasList = ['Persiapan', 'Masak', 'Packing', 'Distribusi', 'Kebersihan', 'Pencucian'];
+    $tugasList = [
+    'Tugas Utama' => [
+    'Persiapan',
+    'Memasak',
+    'Packing',
+    'Distribusi',
+    'Kebersihan',
+    'Pencucian',
+    'Asisten Lapangan'
+    ],
+    'Koordinator' => [
+    'Koordinator Persiapan',
+    'Koordinator Memasak',
+    'Koordinator Packing',
+    'Koordinator Distribusi',
+    'Koordinator Kebersihan',
+    'Koordinator Pencucian',
+    'Koordinator Asisten Lapangan'
+    ]
+    ];
     @endphp
 
     <div class="max-w-7xl mx-auto px-6">
-        @foreach($tugasList as $tugas)
+        @foreach(array_merge(...array_values($tugasList)) as $tugas)
         <div class="mb-12">
             <h3 class="text-2xl font-semibold text-sky-600 mb-4">Tugas {{ $tugas }}</h3>
             <div class="overflow-x-auto rounded-2xl shadow-md shadow-sky-200/70">
@@ -73,26 +89,20 @@
                             <td class="px-6 py-4">{{ $p->jam_pulang ?? 'Selesai' }}</td>
                             <td class="px-6 py-4">{{ $p->tugas }}</td>
                             <td class="px-6 py-4 flex gap-2">
-                                <!-- Form Hapus -->
                                 <form action="{{ route('petugas.destroy', $p->id) }}" method="POST"
                                     onsubmit="return confirm('Yakin ingin menghapus petugas ini?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
-                                        Hapus
-                                    </button>
+                                        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Hapus</button>
                                 </form>
-
-                                <!-- Tombol Edit -->
                                 <button onclick="editData({
                                     id: '{{ $p->id }}',
                                     karyawan_id: '{{ $p->karyawan_id }}',
                                     tugas: '{{ $p->tugas }}',
                                     jam_masuk: '{{ $p->jam_masuk }}'
-                                })" class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                                    Edit
-                                </button>
+                                })"
+                                    class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">Edit</button>
                             </td>
                         </tr>
                         @endforeach
@@ -108,6 +118,7 @@
         @endforeach
     </div>
 
+    <!-- Modal Tambah -->
     <div id="modalForm" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-xl shadow-sky-500 w-full max-w-lg p-6 border-t-4 border-sky-500">
             <div class="flex justify-between items-center mb-4">
@@ -119,8 +130,6 @@
             <form action="{{ route('petugas.store') }}" method="POST">
                 @csrf
                 <div class="space-y-4">
-
-                    <!-- Nama Karyawan -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-1">Nama Karyawan</label>
                         <select name="karyawan_id" class="w-full border border-gray-300 rounded-md px-4 py-2" required>
@@ -133,31 +142,31 @@
                         </select>
                     </div>
 
-                    <!-- Tugas (bisa diganti) -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
                         <select name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2" required>
                             <option value="">-- Pilih Tugas --</option>
-                            @foreach(['Persiapan','Memasak','Packing','Distribusi','Kebersihan','Pencucian'] as $tugas)
-                            <option value="{{ $tugas }}">{{ $tugas }}</option>
+                            @foreach($tugasList as $group => $list)
+                            <optgroup label="{{ $group }}">
+                                @foreach($list as $t)
+                                <option value="{{ $t }}">{{ $t }}</option>
+                                @endforeach
+                            </optgroup>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Jam Masuk -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-1">Jam Masuk</label>
                         <input type="time" name="jam_masuk" class="w-full border border-gray-300 rounded-md px-4 py-2"
                             required>
                     </div>
 
-                    <!-- Jam Pulang -->
                     <div>
                         <label class="block text-gray-700 font-semibold mb-1">Jam Pulang</label>
                         <input type="text" value="Selesai" disabled
                             class="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-100">
                     </div>
-
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
@@ -170,7 +179,7 @@
         </div>
     </div>
 
-    <!-- Modal Edit Jadwal Petugas -->
+    <!-- Modal Edit -->
     <div id="modalEdit" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-xl shadow-sky-500 w-full max-w-lg p-6 border-t-4 border-sky-500">
             <div class="flex justify-between items-center mb-4">
@@ -183,7 +192,6 @@
                 @csrf
                 <input type="hidden" id="editId" name="id">
 
-                <!-- Nama Karyawan -->
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-1">Nama Karyawan</label>
                     <select id="editKaryawan" name="karyawan_id"
@@ -195,18 +203,20 @@
                     </select>
                 </div>
 
-                <!-- Tugas -->
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
                     <select id="editTugas" name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2"
                         required>
-                        @foreach(['Persiapan','Memasak','Packing','Distribusi','Kebersihan','Pencucian'] as $t)
-                        <option value="{{ $t }}">{{ $t }}</option>
+                        @foreach($tugasList as $group => $list)
+                        <optgroup label="{{ $group }}">
+                            @foreach($list as $t)
+                            <option value="{{ $t }}">{{ $t }}</option>
+                            @endforeach
+                        </optgroup>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- Jam Masuk -->
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-1">Jam Masuk</label>
                     <input type="time" id="editJamMasuk" name="jam_masuk"
@@ -215,21 +225,13 @@
 
                 <div class="flex justify-end gap-3 mt-6">
                     <button type="button" onclick="closeModalEdit()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-gray-300">
-                        Batal
-                    </button>
+                        class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-gray-300">Batal</button>
                     <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded hover:bg-yellow-600">
-                        Simpan
-                    </button>
+                        class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded hover:bg-yellow-600">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
-
-
-
-
 
     <script>
     function openModal() {
@@ -240,17 +242,13 @@
         document.getElementById('modalForm').classList.add('hidden');
     }
 
-
-    function confirmDelete(event, nama) {
-        event.preventDefault();
-        if (confirm(`Apakah Anda yakin ingin menghapus karyawan "${nama}"?`)) {
-            event.target.submit();
-        }
+    function closeModalEdit() {
+        document.getElementById('modalEdit').classList.add('hidden');
     }
 
     function editData(data) {
         const form = document.getElementById('formEdit');
-        form.action = `/petugas/update/${data.id}`; // route POST untuk update
+        form.action = `/petugas/update/${data.id}`;
 
         document.getElementById('editId').value = data.id;
         document.getElementById('editKaryawan').value = data.karyawan_id;
@@ -259,12 +257,6 @@
 
         document.getElementById('modalEdit').classList.remove('hidden');
     }
-
-
-
-    function closeModalEdit() {
-        document.getElementById('modalEdit').classList.add('hidden');
-    }
     </script>
-
-    @endsection
+</div>
+@endsection

@@ -8,107 +8,148 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
-
-
 class PetugasController extends Controller
 {
-    // Tampilkan semua petugas dan data karyawan
-public function index()
-{
-    // Ambil semua petugas beserta nama karyawan
-    $petugas = Petugas::with('karyawan')->get();
+    /**
+     * Tampilkan semua petugas dan data karyawan.
+     */
+    public function index()
+    {
+        // Urutan tugas yang diinginkan
+        $tugasList = [
+            'Persiapan',
+            'Memasak',
+            'Packing',
+            'Distribusi',
+            'Kebersihan',
+            'Pencucian',
+            'Asisten Lapangan',
+            'Koordinator Persiapan',
+            'Koordinator Memasak',
+            'Koordinator Packing',
+            'Koordinator Distribusi',
+            'Koordinator Kebersihan',
+            'Koordinator Pencucian',
+            'Koordinator Asisten Lapangan',
+        ];
 
-    // Kelompokkan petugas berdasarkan tugas
-    $petugasByTugas = $petugas->groupBy('tugas');
+        // Ambil semua petugas dengan urutan sesuai FIELD()
+        $petugas = Petugas::with('karyawan')
+            ->orderByRaw("FIELD(tugas, '" . implode("','", $tugasList) . "')")
+            ->orderBy('jam_masuk', 'asc')
+            ->get();
 
-    // Ambil semua karyawan untuk dropdown
-    $karyawans = Karyawan::all();
+        // Kelompokkan petugas berdasarkan tugas
+        $petugasByTugas = $petugas->groupBy('tugas');
 
-    return view('admin.petugas', compact('petugasByTugas', 'karyawans'));
-}
+        // Ambil semua karyawan untuk dropdown
+        $karyawans = Karyawan::orderBy('nama')->get();
 
+        return view('admin.petugas', compact('petugasByTugas', 'karyawans', 'tugasList'));
+    }
 
-    // Simpan jadwal petugas baru
+    /**
+     * Simpan jadwal petugas baru.
+     */
     public function store(Request $request)
     {
         $request->validate([
             'karyawan_id' => 'required|exists:karyawans,id',
-            'tugas' => 'required|string',
-            'jam_masuk' => 'required',
+            'tugas'       => 'required|string',
+            'jam_masuk'   => 'required|date_format:H:i',
         ]);
 
-        // Ambil data karyawan
         $karyawan = Karyawan::findOrFail($request->karyawan_id);
 
-        // Update tugas karyawan jika berubah
+        // Update tugas di tabel karyawan
         $karyawan->tugas = $request->tugas;
         $karyawan->save();
 
-        // Simpan ke tabel petugas
+        // Simpan jadwal petugas
         Petugas::create([
             'karyawan_id' => $karyawan->id,
-            'tugas' => $request->tugas,
-            'jam_masuk' => $request->jam_masuk,
-            'jam_pulang' => null, // Jam pulang belum diisi
+            'tugas'       => $request->tugas,
+            'jam_masuk'   => $request->jam_masuk,
+            'jam_pulang'  => null,
         ]);
 
-        return redirect()->back()->with('success', 'Jadwal petugas berhasil ditambahkan');
+        return redirect()->back()->with('success', '✅ Jadwal petugas berhasil ditambahkan!');
     }
 
-    // Update tugas petugas
-  public function update(Request $request, $id)
-{
-    $request->validate([
-        'karyawan_id' => 'required|exists:karyawans,id',
-        'tugas' => 'required|string',
-        'jam_masuk' => 'required',
-    ]);
+    /**
+     * Update jadwal petugas.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'karyawan_id' => 'required|exists:karyawans,id',
+            'tugas'       => 'required|string',
+            'jam_masuk'   => 'required|date_format:H:i',
+        ]);
 
-    $petugas = Petugas::findOrFail($id);
+        $petugas = Petugas::findOrFail($id);
 
-    // Update data petugas
-    $petugas->karyawan_id = $request->karyawan_id;
-    $petugas->tugas = $request->tugas;
-    $petugas->jam_masuk = $request->jam_masuk;
-    $petugas->save();
+        // Update data petugas
+        $petugas->update([
+            'karyawan_id' => $request->karyawan_id,
+            'tugas'       => $request->tugas,
+            'jam_masuk'   => $request->jam_masuk,
+        ]);
 
-    // Update tugas di tabel karyawan
-    $karyawan = Karyawan::find($request->karyawan_id);
-    if ($karyawan) {
-        $karyawan->tugas = $request->tugas;
-        $karyawan->save();
+        // Update juga tugas karyawan
+        $karyawan = Karyawan::find($request->karyawan_id);
+        if ($karyawan) {
+            $karyawan->tugas = $request->tugas;
+            $karyawan->save();
+        }
+
+        return redirect()->back()->with('success', '✅ Jadwal petugas berhasil diperbarui!');
     }
 
-    return redirect()->back()->with('success', 'Jadwal petugas berhasil diperbarui.');
-}
-public function exportPDF()
-{
-    // Ambil semua petugas dengan karyawan
-    $petugas = Petugas::with('karyawan')->get();
+    /**
+     * Export jadwal petugas ke PDF.
+     */
+    public function exportPDF()
+    {
+        $tugasList = [
+            'Persiapan',
+            'Memasak',
+            'Packing',
+            'Distribusi',
+            'Kebersihan',
+            'Pencucian',
+            'Asisten Lapangan',
+            'Koordinator Persiapan',
+            'Koordinator Memasak',
+            'Koordinator Packing',
+            'Koordinator Distribusi',
+            'Koordinator Kebersihan',
+            'Koordinator Pencucian',
+            'Koordinator Asisten Lapangan',
+        ];
 
-    // Kelompokkan berdasarkan tugas
-    $tugasList = ['Persiapan','Memasak','Packing','Distribusi','Kebersihan','Pencucian'];
-    $petugasByTugas = $petugas->groupBy('tugas');
+        $petugas = Petugas::with('karyawan')
+            ->orderByRaw("FIELD(tugas, '" . implode("','", $tugasList) . "')")
+            ->orderBy('jam_masuk', 'asc')
+            ->get();
 
-    $tanggal = Carbon::today()->toDateString();
+        $petugasByTugas = $petugas->groupBy('tugas');
+        $tanggal = Carbon::today()->format('Y-m-d');
 
-    $pdf = PDF::loadView('admin.petugas-pdf', compact('petugasByTugas', 'tugasList', 'tanggal'))
-              ->setPaper('a4', 'portrait')
-              ->setOptions([
-                  'margin-top' => 10,
-                  'margin-bottom' => 10,
-                  'margin-left' => 10,
-                  'margin-right' => 10,
-              ]);
+        $pdf = Pdf::loadView('admin.petugas-pdf', compact('petugasByTugas', 'tugasList', 'tanggal'))
+                  ->setPaper('a4', 'portrait');
 
-    return $pdf->download("jadwal_petugas_" . Carbon::parse($tanggal)->format('Y-m-d') . ".pdf");
-}
-    // Hapus petugas
+        return $pdf->download("jadwal_petugas_{$tanggal}.pdf");
+    }
+
+    /**
+     * Hapus jadwal petugas.
+     */
     public function destroy($id)
     {
         $petugas = Petugas::findOrFail($id);
         $petugas->delete();
 
-        return redirect()->route('admin.petugas')->with('success', 'Petugas berhasil dihapus.');
+        return redirect()->back()->with('success', '🗑️ Jadwal petugas berhasil dihapus!');
     }
 }

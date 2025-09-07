@@ -14,7 +14,6 @@
     h2 {
         text-align: center;
         color: #38bdf8;
-        /* header biru */
         margin-bottom: 5px;
     }
 
@@ -40,7 +39,6 @@
 
     th {
         background-color: #38bdf8;
-        /* sky-500 */
         color: white;
     }
 
@@ -49,20 +47,17 @@
         max-height: 40px;
     }
 
-    /* Footer */
     .footer {
         margin-top: 30px;
         width: 100%;
         display: flex;
         justify-content: flex-end;
-        /* pojok kanan */
         font-size: 10px;
     }
 
     .footer .mengetahui {
         text-align: center;
         width: 200px;
-        /* lebih lebar */
     }
     </style>
 </head>
@@ -77,6 +72,7 @@
             <tr>
                 <th>No</th>
                 <th>Nama Karyawan</th>
+                <th>Tugas</th>
                 <th>Status</th>
                 <th>Waktu Masuk</th>
                 <th>Waktu Keluar</th>
@@ -88,6 +84,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $k->nama }}</td>
+                <td>{{ $k->tugas ?? '-' }}</td>
                 <td>{{ $k->status }}</td>
                 <td>{{ $k->waktu_masuk }}</td>
                 <td>{{ $k->waktu_keluar }}</td>
@@ -100,6 +97,12 @@
                 </td>
             </tr>
             @endforeach
+
+            @if($rekapHarian->isEmpty())
+            <tr>
+                <td colspan="7">Belum ada data absensi hari ini.</td>
+            </tr>
+            @endif
         </tbody>
     </table>
 

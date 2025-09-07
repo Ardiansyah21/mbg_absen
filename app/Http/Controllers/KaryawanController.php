@@ -4,76 +4,78 @@ namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
-use PDF; // import DOMPDF
+use PDF; // DOMPDF
 
 class KaryawanController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Daftar semua karyawan.
      */
     public function index()
     {
-        $karyawans = Karyawan::all(); // ambil semua data karyawan
+        $karyawans = Karyawan::orderBy('id', 'desc')->get();
         return view('admin.karyawan', compact('karyawans'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan karyawan baru.
      */
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:100',
-            'tugas' => 'required|in:Persiapan,Memasak,Packing,Distribusi,Kebersihan,Pencucian',
+            'nama'  => 'required|string|max:100',
+            'tugas' => 'required|in:Persiapan,Memasak,Packing,Distribusi,Kebersihan,Pencucian,Asisten Lapangan,Koordinator Persiapan,Koordinator Memasak,Koordinator Packing,Koordinator Distribusi,Koordinator Kebersihan,Koordinator Pencucian,Koordinator Asisten Lapangan',
         ]);
 
         Karyawan::create([
-            'nama' => $request->nama,
+            'nama'  => $request->nama,
             'tugas' => $request->tugas,
         ]);
 
-        return redirect()->back()->with('success', 'Karyawan berhasil ditambahkan!');
+        return redirect()->back()->with('success', '✅ Karyawan berhasil ditambahkan!');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update data karyawan.
      */
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'tugas' => 'required|in:Persiapan,Memasak,Packing,Distribusi,Kebersihan,Pencucian',
+            'nama'  => 'required|string|max:100',
+            'tugas' => 'required|in:Persiapan,Memasak,Packing,Distribusi,Kebersihan,Pencucian,Asisten Lapangan,Koordinator Persiapan,Koordinator Memasak,Koordinator Packing,Koordinator Distribusi,Koordinator Kebersihan,Koordinator Pencucian,Koordinator Asisten Lapangan',
         ]);
 
         $karyawan = Karyawan::findOrFail($id);
-        $karyawan->update($request->only('nama', 'tugas'));
+        $karyawan->update([
+            'nama'  => $request->nama,
+            'tugas' => $request->tugas,
+        ]);
 
-        return redirect()->back()->with('success', 'Data karyawan berhasil diperbarui!');
+        return redirect()->back()->with('success', '✅ Data karyawan berhasil diperbarui!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hapus data karyawan.
      */
     public function destroy($id)
     {
         $karyawan = Karyawan::findOrFail($id);
         $karyawan->delete();
 
-        return redirect()->back()->with('success', 'Data karyawan berhasil dihapus!');
+        return redirect()->back()->with('success', '🗑️ Data karyawan berhasil dihapus!');
     }
 
     /**
-     * Export semua karyawan ke PDF
+     * Export data karyawan ke PDF.
      */
     public function exportPDF()
-{
-    $karyawans = Karyawan::all();
+    {
+        $karyawans = Karyawan::orderBy('tugas')->get();
 
-    // Generate PDF ukuran A4 portrait
-    $pdf = PDF::loadView('admin.karyawan-pdf', compact('karyawans'))
-              ->setPaper('a4', 'portrait'); // ganti 'landscape' kalau tabel lebar
+        // Buat PDF A4 portrait
+        $pdf = PDF::loadView('admin.karyawan-pdf', compact('karyawans'))
+                  ->setPaper('a4', 'portrait');
 
-    return $pdf->download('data_karyawan.pdf');
-}
-
+        return $pdf->download('data_karyawan.pdf');
+    }
 }

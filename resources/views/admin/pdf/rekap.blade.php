@@ -71,6 +71,7 @@
             <tr>
                 <th>No</th>
                 <th>Nama</th>
+                <th>Tugas</th>
                 <th>Jumlah Hadir</th>
                 <th>Jumlah Tidak Hadir</th>
                 <th>Total Hari</th>
@@ -81,6 +82,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $k->nama }}</td>
+                <td>{{ $k->tugas }}</td>
                 <td>{{ $k->jumlah_hadir }}</td>
                 <td>{{ $k->jumlah_tidak_hadir }}</td>
                 <td>{{ $k->total_hari }}</td>
@@ -89,7 +91,7 @@
 
             @if($rekapAbsensi->isEmpty())
             <tr>
-                <td colspan="5">Belum ada data rekap bulanan.</td>
+                <td colspan="6">Belum ada data rekap bulanan.</td>
             </tr>
             @endif
         </tbody>
@@ -97,7 +99,8 @@
 
     <!-- Catatan -->
     <div class="catatan">
-        📌 Catatan: Rekap ini hanya menghitung karyawan yang hadir. Status izin, sakit, atau alpha dianggap tidak hadir.
+        📌 Catatan: Rekap ini hanya menghitung karyawan yang hadir.
+        Status izin, sakit, atau alpha dianggap tidak hadir. <br>
         Pastikan semua data absensi harian sudah terinput dengan benar.
     </div>
 
