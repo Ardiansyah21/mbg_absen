@@ -13,25 +13,9 @@ return new class extends Migration
     {
         Schema::create('peraturan', function (Blueprint $table) {
             $table->id();
-            $table->enum('tugas', [
-                // Tugas utama
-                'Persiapan',
-                'Memasak',
-                'Packing',
-                'Distribusi',
-                'Kebersihan',
-                'Pencucian',
-                'Asisten Lapangan',
 
-                // Koordinator
-                'Koordinator Persiapan',
-                'Koordinator Memasak',
-                'Koordinator Packing',
-                'Koordinator Distribusi',
-                'Koordinator Kebersihan',
-                'Koordinator Pencucian',
-                'Koordinator Asisten Lapangan',
-            ])->unique();
+            // Kolom tugas diganti string agar aman
+            $table->string('tugas', 50)->unique();
 
             $table->text('deskripsi');
             $table->timestamps();
@@ -43,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('peraturan'); // ✅ diperbaiki
+        Schema::dropIfExists('peraturan');
     }
 };

@@ -13,26 +13,9 @@ return new class extends Migration
     {
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id(); 
-            $table->string('nama');
-         $table->enum('tugas', [
-                // Tugas utama
-                'Persiapan',
-                'Memasak',
-                'Packing',
-                'Distribusi',
-                'Kebersihan',
-                'Pencucian',
-                'Asisten Lapangan',
-
-                // Koordinator
-                'Koordinator Persiapan',
-                'Koordinator Memasak',
-                'Koordinator Packing',
-                'Koordinator Distribusi',
-                'Koordinator Kebersihan',
-                'Koordinator Pencucian',
-                'Koordinator Asisten Lapangan',
-         ]);      $table->timestamps();
+            $table->string('nama', 100);
+            $table->string('tugas', 50); // ✅ string agar aman di semua environment
+            $table->timestamps();
         });
     }
 

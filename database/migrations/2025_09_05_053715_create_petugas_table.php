@@ -19,26 +19,8 @@ return new class extends Migration
                   ->constrained('karyawans')
                   ->cascadeOnDelete();
 
-            // Enum tugas (harus sama persis dengan di karyawans)
-            $table->enum('tugas', [
-                // Tugas utama
-                'Persiapan',
-                'Memasak',
-                'Packing',
-                'Distribusi',
-                'Kebersihan',
-                'Pencucian',
-                'Asisten Lapangan',
-
-                // Koordinator
-                'Koordinator Persiapan',
-                'Koordinator Memasak',
-                'Koordinator Packing',
-                'Koordinator Distribusi',
-                'Koordinator Kebersihan',
-                'Koordinator Pencucian',
-                'Koordinator Asisten Lapangan',
-            ]);
+            // Kolom tugas diganti string agar aman, panjang 50 cukup untuk semua value
+            $table->string('tugas', 50);
 
             // Jam masuk dan pulang
             $table->time('jam_masuk');

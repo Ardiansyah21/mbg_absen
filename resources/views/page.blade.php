@@ -192,7 +192,26 @@
     </section>
 
     @php
-    $tugasList = ['Persiapan', 'Masak', 'Packing', 'Distribusi', 'Kebersihan', 'Pencucian'];
+    $tugasList = [
+    'Tugas Utama' => [
+    'Persiapan',
+    'Memasak',
+    'Packing',
+    'Distribusi',
+    'Kebersihan',
+    'Pencucian',
+    'Asisten Lapangan'
+    ],
+    'Koordinator' => [
+    'Koordinator Persiapan',
+    'Koordinator Memasak',
+    'Koordinator Packing',
+    'Koordinator Distribusi',
+    'Koordinator Kebersihan',
+    'Koordinator Pencucian',
+    'Koordinator Asisten Lapangan'
+    ]
+    ];
     @endphp
 
     <section id="petugas" class="py-20 bg-white">
@@ -201,7 +220,9 @@
                 Jadwal Karyawan
             </h2>
 
-            @foreach($tugasList as $tugas)
+            @foreach($tugasList as $kategori => $tugasArray)
+            <h2 class="text-3xl font-bold text-gray-700 mb-6">{{ $kategori }}</h2>
+            @foreach($tugasArray as $tugas)
             <div class="mb-12">
                 <h3 class="text-2xl font-semibold text-sky-600 mb-4">Tugas {{ $tugas }}</h3>
                 <div class="overflow-x-auto rounded-2xl shadow-md shadow-sky-200/70">
@@ -210,10 +231,10 @@
                             <tr>
                                 <th class="px-6 py-3">No</th>
                                 <th class="px-6 py-3">Nama</th>
-                                <th class="px-6 py-3">Hari</th>
                                 <th class="px-6 py-3">Jam Masuk</th>
                                 <th class="px-6 py-3">Jam Pulang</th>
                                 <th class="px-6 py-3">Tugas</th>
+                                <th class="px-6 py-3">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -222,11 +243,25 @@
                             <tr class="hover:bg-sky-50 transition">
                                 <td class="px-6 py-4">{{ $index + 1 }}</td>
                                 <td class="px-6 py-4 font-medium">{{ $p->karyawan->nama ?? 'Tidak ada' }}</td>
-                                <td class="px-6 py-4">{{ \Carbon\Carbon::parse($p->created_at)->isoFormat('dddd') }}
-                                </td>
                                 <td class="px-6 py-4">{{ $p->jam_masuk }}</td>
                                 <td class="px-6 py-4">{{ $p->jam_pulang ?? 'Selesai' }}</td>
                                 <td class="px-6 py-4">{{ $p->tugas }}</td>
+                                <td class="px-6 py-4 flex gap-2">
+                                    <form action="{{ route('petugas.destroy', $p->id) }}" method="POST"
+                                        onsubmit="return confirm('Yakin ingin menghapus petugas ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Hapus</button>
+                                    </form>
+                                    <button onclick="editData({
+                                            id: '{{ $p->id }}',
+                                            karyawan_id: '{{ $p->karyawan_id }}',
+                                            tugas: '{{ $p->tugas }}',
+                                            jam_masuk: '{{ $p->jam_masuk }}'
+                                        })"
+                                        class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">Edit</button>
+                                </td>
                             </tr>
                             @endforeach
                             @else
@@ -239,8 +274,10 @@
                 </div>
             </div>
             @endforeach
+            @endforeach
         </div>
     </section>
+
 
 
     <!-- Footer -->
