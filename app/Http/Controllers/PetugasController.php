@@ -17,20 +17,30 @@ class PetugasController extends Controller
     {
         // Urutan tugas yang diinginkan
         $tugasList = [
+            // Tugas utama
             'Persiapan',
-            'Memasak',
-            'Packing',
+            'Pengolahan',
+            'Pemorsian',
             'Distribusi',
             'Kebersihan',
             'Pencucian',
             'Asisten Lapangan',
+
+            // Koordinator
             'Koordinator Persiapan',
-            'Koordinator Memasak',
-            'Koordinator Packing',
+            'Koordinator Pengolahan',
+            'Koordinator Pemorsian',
             'Koordinator Distribusi',
             'Koordinator Kebersihan',
             'Koordinator Pencucian',
-            'Koordinator Asisten Lapangan',
+
+            // PJ
+            'PJ Persiapan',
+            'PJ Pengolahan',
+            'PJ Pemorsian',
+            'PJ Distribusi',
+            'PJ Kebersihan',
+            'PJ Pencucian',
         ];
 
         // Ambil semua petugas dengan urutan sesuai FIELD()
@@ -112,20 +122,30 @@ class PetugasController extends Controller
     public function exportPDF()
     {
         $tugasList = [
+            // Tugas utama
             'Persiapan',
-            'Memasak',
-            'Packing',
+            'Pengolahan',
+            'Pemorsian',
             'Distribusi',
             'Kebersihan',
             'Pencucian',
             'Asisten Lapangan',
+
+            // Koordinator
             'Koordinator Persiapan',
-            'Koordinator Memasak',
-            'Koordinator Packing',
+            'Koordinator Pengolahan',
+            'Koordinator Pemorsian',
             'Koordinator Distribusi',
             'Koordinator Kebersihan',
             'Koordinator Pencucian',
-            'Koordinator Asisten Lapangan',
+
+            // PJ
+            'PJ Persiapan',
+            'PJ Pengolahan',
+            'PJ Pemorsian',
+            'PJ Distribusi',
+            'PJ Kebersihan',
+            'PJ Pencucian',
         ];
 
         $petugas = Petugas::with('karyawan')

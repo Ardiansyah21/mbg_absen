@@ -102,22 +102,31 @@
                     <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
                     <select name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2" required>
                         <option value="">-- Pilih Tugas --</option>
+
                         <!-- Tugas utama -->
                         <option value="Persiapan">Persiapan</option>
-                        <option value="Memasak">Memasak</option>
-                        <option value="Packing">Packing</option>
+                        <option value="Pengolahan">Pengolahan</option>
+                        <option value="Pemorsian">Pemorsian</option>
                         <option value="Distribusi">Distribusi</option>
                         <option value="Kebersihan">Kebersihan</option>
                         <option value="Pencucian">Pencucian</option>
                         <option value="Asisten Lapangan">Asisten Lapangan</option>
+
                         <!-- Koordinator -->
                         <option value="Koordinator Persiapan">Koordinator Persiapan</option>
-                        <option value="Koordinator Memasak">Koordinator Memasak</option>
-                        <option value="Koordinator Packing">Koordinator Packing</option>
+                        <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
+                        <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
                         <option value="Koordinator Distribusi">Koordinator Distribusi</option>
                         <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
                         <option value="Koordinator Pencucian">Koordinator Pencucian</option>
-                        <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
+
+                        <!-- PJ -->
+                        <option value="PJ Persiapan">PJ Persiapan</option>
+                        <option value="PJ Pengolahan">PJ Pengolahan</option>
+                        <option value="PJ Pemorsian">PJ Pemorsian</option>
+                        <option value="PJ Distribusi">PJ Distribusi</option>
+                        <option value="PJ Kebersihan">PJ Kebersihan</option>
+                        <option value="PJ Pencucian">PJ Pencucian</option>
                     </select>
                 </div>
             </div>
@@ -157,22 +166,31 @@
                     <select id="editTugas" name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2"
                         required>
                         <option value="">-- Pilih Tugas --</option>
+
                         <!-- Tugas utama -->
                         <option value="Persiapan">Persiapan</option>
-                        <option value="Memasak">Memasak</option>
-                        <option value="Packing">Packing</option>
+                        <option value="Pengolahan">Pengolahan</option>
+                        <option value="Pemorsian">Pemorsian</option>
                         <option value="Distribusi">Distribusi</option>
                         <option value="Kebersihan">Kebersihan</option>
                         <option value="Pencucian">Pencucian</option>
                         <option value="Asisten Lapangan">Asisten Lapangan</option>
+
                         <!-- Koordinator -->
                         <option value="Koordinator Persiapan">Koordinator Persiapan</option>
-                        <option value="Koordinator Memasak">Koordinator Memasak</option>
-                        <option value="Koordinator Packing">Koordinator Packing</option>
+                        <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
+                        <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
                         <option value="Koordinator Distribusi">Koordinator Distribusi</option>
                         <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
                         <option value="Koordinator Pencucian">Koordinator Pencucian</option>
-                        <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
+
+                        <!-- PJ -->
+                        <option value="PJ Persiapan">PJ Persiapan</option>
+                        <option value="PJ Pengolahan">PJ Pengolahan</option>
+                        <option value="PJ Pemorsian">PJ Pemorsian</option>
+                        <option value="PJ Distribusi">PJ Distribusi</option>
+                        <option value="PJ Kebersihan">PJ Kebersihan</option>
+                        <option value="PJ Pencucian">PJ Pencucian</option>
                     </select>
                 </div>
             </div>

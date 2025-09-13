@@ -190,27 +190,33 @@
             </div>
         </div>
     </section>
-
     @php
     $tugasList = [
     'Tugas Utama' => [
     'Persiapan',
-    'Memasak',
-    'Packing',
+    'Pengolahan',
+    'Pemorsian',
     'Distribusi',
     'Kebersihan',
     'Pencucian',
-    'Asisten Lapangan'
+    'Asisten Lapangan',
     ],
     'Koordinator' => [
     'Koordinator Persiapan',
-    'Koordinator Memasak',
-    'Koordinator Packing',
+    'Koordinator Pengolahan',
+    'Koordinator Pemorsian',
     'Koordinator Distribusi',
     'Koordinator Kebersihan',
     'Koordinator Pencucian',
-    'Koordinator Asisten Lapangan'
-    ]
+    ],
+    'PJ' => [
+    'PJ Persiapan',
+    'PJ Pengolahan',
+    'PJ Pemorsian',
+    'PJ Distribusi',
+    'PJ Kebersihan',
+    'PJ Pencucian',
+    ],
     ];
     @endphp
 

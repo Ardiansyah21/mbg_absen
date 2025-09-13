@@ -15,70 +15,80 @@ class AdminController extends Controller
     /**
      * Dashboard utama admin
      */
-    public function index(Request $request)
-    {
-        $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
+ public function index(Request $request)
+{
+    $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
-        // Daftar tugas / jabatan lengkap
-        $tugasList = [
-            'Persiapan',
-            'Memasak',
-            'Packing',
-            'Distribusi',
-            'Kebersihan',
-            'Pencucian',
-            'Asisten Lapangan',
-            'Koordinator Persiapan',
-            'Koordinator Memasak',
-            'Koordinator Packing',
-            'Koordinator Distribusi',
-            'Koordinator Kebersihan',
-            'Koordinator Pencucian',
-            'Koordinator Asisten Lapangan',
+    // Daftar tugas / jabatan lengkap
+    $tugasList = [
+        'Persiapan',
+        'Pengolahan',    // sebelumnya Memasak
+        'Pemorsian',     // sebelumnya Packing
+        'Distribusi',
+        'Kebersihan',
+        'Pencucian',
+        // Asisten Lapangan dihapus dari Koordinator/PJ
+        'Koordinator Persiapan',
+        'Koordinator Pengolahan',
+        'Koordinator Pemorsian',
+        'Koordinator Distribusi',
+        'Koordinator Kebersihan',
+        'Koordinator Pencucian',
+        'PJ Persiapan',
+        'PJ Pengolahan',
+        'PJ Pemorsian',
+        'PJ Distribusi',
+        'PJ Kebersihan',
+        'PJ Pencucian',
+    ];
+
+    // Mapping warna unik Tailwind
+    $warnaClasses = [
+        'Persiapan' => 'blue',
+        'Pengolahan' => 'red',
+        'Pemorsian' => 'green',
+        'Distribusi' => 'yellow',
+        'Kebersihan' => 'purple',
+        'Pencucian' => 'indigo',
+        'Koordinator Persiapan' => 'green',
+        'Koordinator Pengolahan' => 'yellow',
+        'Koordinator Pemorsian' => 'purple',
+        'Koordinator Distribusi' => 'indigo',
+        'Koordinator Kebersihan' => 'blue',
+        'Koordinator Pencucian' => 'red',
+        'PJ Persiapan' => 'blue',
+        'PJ Pengolahan' => 'red',
+        'PJ Pemorsian' => 'green',
+        'PJ Distribusi' => 'yellow',
+        'PJ Kebersihan' => 'purple',
+        'PJ Pencucian' => 'indigo',
+    ];
+
+    // Hitung jumlah karyawan per tugas
+    $jumlahPerTugas = [];
+    foreach ($tugasList as $tugas) {
+        $jumlahPerTugas[] = [
+            'tugas'  => $tugas,
+            'warna'  => $warnaClasses[$tugas] ?? 'gray',
+            'jumlah' => Karyawan::where('tugas', $tugas)->count(),
         ];
-
-        // Mapping warna unik Tailwind
-        $warnaClasses = [
-            'Persiapan' => 'blue',
-            'Memasak' => 'red',
-            'Packing' => 'green',
-            'Distribusi' => 'yellow',
-            'Kebersihan' => 'purple',
-            'Pencucian' => 'indigo',
-            'Asisten Lapangan' => 'blue',
-            'Koordinator Persiapan' => 'green',
-            'Koordinator Memasak' => 'yellow',
-            'Koordinator Packing' => 'purple',
-            'Koordinator Distribusi' => 'indigo',
-            'Koordinator Kebersihan' => 'blue',
-            'Koordinator Pencucian' => 'red',
-            'Koordinator Asisten Lapangan' => 'green',
-        ];
-
-        // Hitung jumlah karyawan per tugas
-        $jumlahPerTugas = [];
-        foreach ($tugasList as $tugas) {
-            $jumlahPerTugas[] = [
-                'tugas'  => $tugas,
-                'warna'  => $warnaClasses[$tugas] ?? 'gray',
-                'jumlah' => Karyawan::where('tugas', $tugas)->count(),
-            ];
-        }
-
-        $totalKaryawan = Karyawan::count();
-        $jumlahHadir = Karyawan::whereHas('absensis', function ($q) use ($tanggal) {
-            $q->whereDate('tanggal', $tanggal)->where('status', 'Hadir');
-        })->count();
-
-        $jumlahTidakHadir = $totalKaryawan - $jumlahHadir;
-
-        return view('admin.dashboard', compact(
-            'jumlahPerTugas',
-            'totalKaryawan',
-            'jumlahHadir',
-            'jumlahTidakHadir'
-        ));
     }
+
+    $totalKaryawan = Karyawan::count();
+    $jumlahHadir = Karyawan::whereHas('absensis', function ($q) use ($tanggal) {
+        $q->whereDate('tanggal', $tanggal)->where('status', 'Hadir');
+    })->count();
+
+    $jumlahTidakHadir = $totalKaryawan - $jumlahHadir;
+
+    return view('admin.dashboard', compact(
+        'jumlahPerTugas',
+        'totalKaryawan',
+        'jumlahHadir',
+        'jumlahTidakHadir'
+    ));
+}
+
 
     /**
      * Halaman daftar absensi

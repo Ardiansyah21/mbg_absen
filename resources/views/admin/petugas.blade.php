@@ -44,22 +44,29 @@
     $tugasList = [
     'Tugas Utama' => [
     'Persiapan',
-    'Memasak',
-    'Packing',
+    'Pengolahan',
+    'Pemorsian',
     'Distribusi',
     'Kebersihan',
     'Pencucian',
-    'Asisten Lapangan'
+    'Asisten Lapangan',
     ],
     'Koordinator' => [
     'Koordinator Persiapan',
-    'Koordinator Memasak',
-    'Koordinator Packing',
+    'Koordinator Pengolahan',
+    'Koordinator Pemorsian',
     'Koordinator Distribusi',
     'Koordinator Kebersihan',
     'Koordinator Pencucian',
-    'Koordinator Asisten Lapangan'
-    ]
+    ],
+    'PJ' => [
+    'PJ Persiapan',
+    'PJ Pengolahan',
+    'PJ Pemorsian',
+    'PJ Distribusi',
+    'PJ Kebersihan',
+    'PJ Pencucian',
+    ],
     ];
     @endphp
 
@@ -248,7 +255,7 @@
 
     function editData(data) {
         const form = document.getElementById('formEdit');
-        form.action = `/petugas/update/${data.id}`;
+        form.action = `{{ url('/petugas/update') }}/${data.id}`;
 
         document.getElementById('editId').value = data.id;
         document.getElementById('editKaryawan').value = data.karyawan_id;

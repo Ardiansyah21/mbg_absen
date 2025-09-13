@@ -145,7 +145,17 @@
                             <option value="Koordinator Pencucian">Koordinator Pencucian</option>
                             <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
                         </optgroup>
+                        <optgroup label="Penanggung Jawab">
+                            <option value="PJ Persiapan">PJ Persiapan</option>
+                            <option value="PJ Memasak">PJ Memasak</option>
+                            <option value="PJ Packing">PJ Packing</option>
+                            <option value="PJ Distribusi">PJ Distribusi</option>
+                            <option value="PJ Kebersihan">PJ Kebersihan</option>
+                            <option value="PJ Pencucian">PJ Pencucian</option>
+                            <option value="PJ Asisten Lapangan">PJ Asisten Lapangan</option>
+                        </optgroup>
                     </select>
+
                 </div>
                 <div>
                     <label class="block text-gray-700 font-semibold mb-1">Peraturan</label>
@@ -200,7 +210,17 @@
                             <option value="Koordinator Pencucian">Koordinator Pencucian</option>
                             <option value="Koordinator Asisten Lapangan">Koordinator Asisten Lapangan</option>
                         </optgroup>
+                        <optgroup label="Penanggung Jawab">
+                            <option value="PJ Persiapan">PJ Persiapan</option>
+                            <option value="PJ Memasak">PJ Memasak</option>
+                            <option value="PJ Packing">PJ Packing</option>
+                            <option value="PJ Distribusi">PJ Distribusi</option>
+                            <option value="PJ Kebersihan">PJ Kebersihan</option>
+                            <option value="PJ Pencucian">PJ Pencucian</option>
+                            <option value="PJ Asisten Lapangan">PJ Asisten Lapangan</option>
+                        </optgroup>
                     </select>
+
                 </div>
                 <div>
                     <label class="block text-gray-700 font-semibold mb-1">Peraturan</label>

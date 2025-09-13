@@ -30,21 +30,27 @@
                 @switch($data['tugas'])
                 {{-- Tugas Utama --}}
                 @case('Persiapan') 🍳 @break
-                @case('Memasak') 🔥 @break
-                @case('Packing') 📦 @break
+                @case('Pengolahan') 🔥 @break
+                @case('Pemorsian') 📦 @break
                 @case('Distribusi') 🚚 @break
                 @case('Kebersihan') 🧹 @break
                 @case('Pencucian') 🧼 @break
-                @case('Asisten Lapangan') 👷‍♂️ @break
 
                 {{-- Koordinator --}}
                 @case('Koordinator Persiapan') 🧑‍🍳 @break
-                @case('Koordinator Memasak') 👨‍🍳 @break
-                @case('Koordinator Packing') 📦✨ @break
+                @case('Koordinator Pengolahan') 👨‍🍳 @break
+                @case('Koordinator Pemorsian') 📦✨ @break
                 @case('Koordinator Distribusi') 🚛✨ @break
                 @case('Koordinator Kebersihan') 🧽✨ @break
                 @case('Koordinator Pencucian') 🪣✨ @break
-                @case('Koordinator Asisten Lapangan') 👷‍♀️✨ @break
+
+                {{-- PJ --}}
+                @case('PJ Persiapan') 🧑‍🍳✨ @break
+                @case('PJ Pengolahan') 🔥✨ @break
+                @case('PJ Pemorsian') 📦✨ @break
+                @case('PJ Distribusi') 🚚✨ @break
+                @case('PJ Kebersihan') 🧹✨ @break
+                @case('PJ Pencucian') 🧼✨ @break
 
                 @default 👤
                 @endswitch

@@ -22,7 +22,7 @@ public function index()
 {
     // Ambil semua jadwal petugas beserta data karyawan
     $petugas = Petugas::with('karyawan')
-        ->orderByRaw("FIELD(tugas, 'Persiapan','Masak','Packing','Distribusi','Kebersihan','Pencucian')")
+        ->orderByRaw("FIELD(tugas, 'Persiapan','Pengolahan','Pemorsian','Distribusi','Kebersihan','Pencucian')")
         ->get();
 
     // Kelompokkan petugas berdasarkan tugas agar mudah ditampilkan per tabel

@@ -22,18 +22,19 @@ class KaryawanController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nama'  => 'required|string|max:100',
-            'tugas' => 'required|in:Persiapan,Memasak,Packing,Distribusi,Kebersihan,Pencucian,Asisten Lapangan,Koordinator Persiapan,Koordinator Memasak,Koordinator Packing,Koordinator Distribusi,Koordinator Kebersihan,Koordinator Pencucian,Koordinator Asisten Lapangan',
-        ]);
+    $request->validate([
+        'nama'  => 'required|string|max:100',
+        'tugas' => 'required|in:Persiapan,Pengolahan,Pemorsian,Distribusi,Kebersihan,Pencucian,Asisten Lapangan,Koordinator Persiapan,Koordinator Pengolahan,Koordinator Pemorsian,Koordinator Distribusi,Koordinator Kebersihan,Koordinator Pencucian,PJ Persiapan,PJ Pengolahan,PJ Pemorsian,PJ Distribusi,PJ Kebersihan,PJ Pencucian',
+    ]);
 
-        Karyawan::create([
-            'nama'  => $request->nama,
-            'tugas' => $request->tugas,
-        ]);
+    Karyawan::create([
+        'nama'  => $request->nama,
+        'tugas' => $request->tugas,
+    ]);
 
-        return redirect()->back()->with('success', '✅ Karyawan berhasil ditambahkan!');
-    }
+    return redirect()->back()->with('success', '✅ Karyawan berhasil ditambahkan!');
+}
+
 
     /**
      * Update data karyawan.
@@ -42,7 +43,7 @@ class KaryawanController extends Controller
     {
         $request->validate([
             'nama'  => 'required|string|max:100',
-            'tugas' => 'required|in:Persiapan,Memasak,Packing,Distribusi,Kebersihan,Pencucian,Asisten Lapangan,Koordinator Persiapan,Koordinator Memasak,Koordinator Packing,Koordinator Distribusi,Koordinator Kebersihan,Koordinator Pencucian,Koordinator Asisten Lapangan',
+        'tugas' => 'required|in:Persiapan,Pengolahan,Pemorsian,Distribusi,Kebersihan,Pencucian,Asisten Lapangan,Koordinator Persiapan,Koordinator Pengolahan,Koordinator Pemorsian,Koordinator Distribusi,Koordinator Kebersihan,Koordinator Pencucian,PJ Persiapan,PJ Pengolahan,PJ Pemorsian,PJ Distribusi,PJ Kebersihan,PJ Pencucian',
         ]);
 
         $karyawan = Karyawan::findOrFail($id);
