@@ -129,8 +129,8 @@
                         <option value="">-- Pilih Tugas --</option>
                         <optgroup label="Tugas Utama">
                             <option value="Persiapan">Persiapan</option>
-                            <option value="Memasak">Memasak</option>
-                            <option value="Packing">Packing</option>
+                            <option value="Pengolahan">Pengolahan</option>
+                            <option value="Pemorsian">Pemorsian</option>
                             <option value="Distribusi">Distribusi</option>
                             <option value="Kebersihan">Kebersihan</option>
                             <option value="Pencucian">Pencucian</option>
@@ -138,8 +138,8 @@
                         </optgroup>
                         <optgroup label="Koordinator">
                             <option value="Koordinator Persiapan">Koordinator Persiapan</option>
-                            <option value="Koordinator Memasak">Koordinator Memasak</option>
-                            <option value="Koordinator Packing">Koordinator Packing</option>
+                            <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
+                            <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
                             <option value="Koordinator Distribusi">Koordinator Distribusi</option>
                             <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
                             <option value="Koordinator Pencucian">Koordinator Pencucian</option>
@@ -147,12 +147,11 @@
                         </optgroup>
                         <optgroup label="Penanggung Jawab">
                             <option value="PJ Persiapan">PJ Persiapan</option>
-                            <option value="PJ Memasak">PJ Memasak</option>
-                            <option value="PJ Packing">PJ Packing</option>
+                            <option value="PJ Pengolahan">PJ Pengolahan</option>
+                            <option value="PJ Pemorsian">PJ Pemorsian</option>
                             <option value="PJ Distribusi">PJ Distribusi</option>
                             <option value="PJ Kebersihan">PJ Kebersihan</option>
                             <option value="PJ Pencucian">PJ Pencucian</option>
-                            <option value="PJ Asisten Lapangan">PJ Asisten Lapangan</option>
                         </optgroup>
                     </select>
 
@@ -194,8 +193,8 @@
                         <option value="">-- Pilih Tugas --</option>
                         <optgroup label="Tugas Utama">
                             <option value="Persiapan">Persiapan</option>
-                            <option value="Memasak">Memasak</option>
-                            <option value="Packing">Packing</option>
+                            <option value="Pengolahan">Pengolahan</option>
+                            <option value="Pemorsian">Pemorsian</option>
                             <option value="Distribusi">Distribusi</option>
                             <option value="Kebersihan">Kebersihan</option>
                             <option value="Pencucian">Pencucian</option>
@@ -203,8 +202,8 @@
                         </optgroup>
                         <optgroup label="Koordinator">
                             <option value="Koordinator Persiapan">Koordinator Persiapan</option>
-                            <option value="Koordinator Memasak">Koordinator Memasak</option>
-                            <option value="Koordinator Packing">Koordinator Packing</option>
+                            <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
+                            <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
                             <option value="Koordinator Distribusi">Koordinator Distribusi</option>
                             <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
                             <option value="Koordinator Pencucian">Koordinator Pencucian</option>
@@ -212,12 +211,11 @@
                         </optgroup>
                         <optgroup label="Penanggung Jawab">
                             <option value="PJ Persiapan">PJ Persiapan</option>
-                            <option value="PJ Memasak">PJ Memasak</option>
-                            <option value="PJ Packing">PJ Packing</option>
+                            <option value="PJ Pengolahan">PJ Pengolahan</option>
+                            <option value="PJ Pemorsian">PJ Pemorsian</option>
                             <option value="PJ Distribusi">PJ Distribusi</option>
                             <option value="PJ Kebersihan">PJ Kebersihan</option>
                             <option value="PJ Pencucian">PJ Pencucian</option>
-                            <option value="PJ Asisten Lapangan">PJ Asisten Lapangan</option>
                         </optgroup>
                     </select>
 
