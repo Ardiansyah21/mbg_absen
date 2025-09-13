@@ -379,45 +379,38 @@
         });
 
         // ================= Submit Izin =================
-        document.getElementById('absensi-form').addEventListener('submit', e => {
-            e.preventDefault();
-            if (signaturePad.isEmpty() && !tandaTanganInput.value) {
-                alert("Tanda tangan wajib diisi!");
-                return;
-            }
-            tandaTanganInput.value = tandaTanganInput.value || signaturePad.toDataURL();
-            sessionStorage.setItem('tanda_tangan', tandaTanganInput.value);
-
-            const formData = new FormData(e.target);
-            fetch(e.target.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                }).then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        selectedKaryawanId = formData.get('karyawan_id');
-                        formDiv.classList.add('hidden');
-                        fingerprintDiv.classList.remove('hidden');
-                        statusMsg.textContent =
-                            "Registrasi berhasil! Klik fingerprint untuk absen.";
-                        const k = data.data.karyawan;
-                        document.getElementById('karyawan-info').innerHTML = `
-                <div class="flex items-center gap-4 mb-8 bg-white text-gray-800 px-6 py-4 rounded-2xl shadow-lg shadow-sky-300 border border-sky-100 w-full">
-                    <div class="w-14 h-14 bg-blue-500 text-white flex items-center justify-center rounded-full shadow-md shadow-sky-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.21.8 5.879 2.121M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-lg font-bold">${k.nama}</p>
-                        <p class="text-sm text-gray-500">${k.tugas}</p>
-                    </div>
-                </div>`;
-                    } else alert("Gagal registrasi: " + (data.message || "Coba lagi."));
-                }).catch(err => console.error(err));
+        submitIzinBtn.addEventListener('click', () => {
+            const tipeIzin = izinSelect.value;
+            if (!tipeIzin) return alert("Silakan pilih tipe izin!");
+            if (!selectedKaryawanId) return alert("Karyawan belum terpilih!");
+            fetch("{{ route('absensi.izin') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    karyawan_id: selectedKaryawanId,
+                    tipe_izin: tipeIzin,
+                    tanda_tangan: tandaTanganInput.value || signaturePad.toDataURL()
+                })
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    showNotif(`✅ Izin "${tipeIzin}" dicatat. Masih bisa absen masuk/keluar.`,
+                        'success');
+                    statusMsg.textContent =
+                        `✅ Izin "${tipeIzin}" dicatat. Masih bisa absen masuk/keluar.`;
+                    izinDiv.classList.add('hidden');
+                } else {
+                    statusMsg.textContent =
+                        `❌ Gagal kirim izin: ${data.message || 'Coba lagi'}`;
+                    showNotif(data.message || "Gagal kirim izin.", 'error');
+                }
+            }).catch(err => {
+                console.error(err);
+                statusMsg.textContent = "❌ Terjadi kesalahan saat mengirim izin.";
+                showNotif("Terjadi kesalahan saat mengirim izin.", 'error');
+            });
         });
 
         // ================= Fingerprint =================
@@ -444,7 +437,7 @@
 
                 const kantorLat = -6.691640391234676;
                 const kantorLng = 106.88689131829916;
-                const radiusM = 30;
+                const radiusM = 100;
 
                 function getDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371000;

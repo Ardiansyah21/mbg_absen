@@ -41,200 +41,221 @@
     </div>
 
     <!-- Table -->
-    <div class="mb-12">
-        <div class="overflow-x-auto rounded-2xl shadow-md shadow-sky-200/70">
-            <table class="min-w-full text-sm text-left text-gray-700">
-                <thead class="bg-sky-500 text-white">
-                    <tr>
-                        <th class="px-6 py-3">No</th>
-                        <th class="px-6 py-3">Nama</th>
-                        <th class="px-6 py-3">Tugas</th>
-                        <th class="px-6 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @foreach($karyawans as $karyawan)
-                    <tr class="hover:bg-sky-50 transition">
-                        <td class="px-6 py-4">{{ $loop->iteration }}</td>
-                        <td class="px-6 py-4 font-medium">{{ $karyawan->nama }}</td>
-                        <td class="px-6 py-4">{{ $karyawan->tugas }}</td>
-                        <td class="px-6 py-4 flex gap-2">
-                            <button class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                                onclick="editData({id:{{ $karyawan->id }}, nama:'{{ $karyawan->nama }}', tugas:'{{ $karyawan->tugas }}'})">
-                                Edit
+    <div class="overflow-x-auto rounded-2xl shadow-md shadow-sky-200/70">
+        <table id="absensiTable" class="min-w-full text-sm text-left text-gray-700">
+            <thead class="bg-sky-500 text-white">
+                <tr>
+                    <th class="px-6 py-3">No</th>
+                    <th class="px-6 py-3">Nama</th>
+                    <th class="px-6 py-3">Tugas</th>
+                    <th class="px-6 py-3">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                @foreach($karyawans as $karyawan)
+                <tr class="hover:bg-sky-50 transition">
+                    <td class="px-6 py-4">{{ $loop->iteration }}</td>
+                    <td class="px-6 py-4 font-medium">{{ $karyawan->nama }}</td>
+                    <td class="px-6 py-4">{{ $karyawan->tugas }}</td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                            onclick="editData({id:{{ $karyawan->id }}, nama:'{{ $karyawan->nama }}', tugas:'{{ $karyawan->tugas }}'})">
+                            Edit
+                        </button>
+
+                        <form action="{{ route('karyawan.destroy', $karyawan->id) }}" method="POST"
+                            onsubmit="return confirmDelete(event, '{{ addslashes($karyawan->nama) }}')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                                Hapus
                             </button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
-                            <form action="{{ route('karyawan.destroy', $karyawan->id) }}" method="POST"
-                                onsubmit="return confirmDelete(event, '{{ addslashes($karyawan->nama) }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
-                                    Hapus
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+
+
+    <!-- Modal Tambah -->
+    <div id="modalForm" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl shadow-sky-500 w-full max-w-lg p-6 border-t-4 border-sky-500">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-sky-600">Tambah Karyawan</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <form action="{{ route('karyawan.store') }}" method="POST">
+                @csrf
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1">Nama</label>
+                        <input type="text" name="nama" class="w-full border border-gray-300 rounded-md px-4 py-2"
+                            placeholder="Masukkan nama" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
+                        <select name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2" required>
+                            <option value="">-- Pilih Tugas --</option>
+
+                            <!-- Tugas utama -->
+                            <option value="Persiapan">Persiapan</option>
+                            <option value="Pengolahan">Pengolahan</option>
+                            <option value="Pemorsian">Pemorsian</option>
+                            <option value="Distribusi">Distribusi</option>
+                            <option value="Kebersihan">Kebersihan</option>
+                            <option value="Pencucian">Pencucian</option>
+                            <option value="Asisten Lapangan">Asisten Lapangan</option>
+
+                            <!-- Koordinator -->
+                            <option value="Koordinator Persiapan">Koordinator Persiapan</option>
+                            <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
+                            <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
+                            <option value="Koordinator Distribusi">Koordinator Distribusi</option>
+                            <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
+                            <option value="Koordinator Pencucian">Koordinator Pencucian</option>
+
+                            <!-- PJ -->
+                            <option value="PJ Persiapan">PJ Persiapan</option>
+                            <option value="PJ Pengolahan">PJ Pengolahan</option>
+                            <option value="PJ Pemorsian">PJ Pemorsian</option>
+                            <option value="PJ Distribusi">PJ Distribusi</option>
+                            <option value="PJ Kebersihan">PJ Kebersihan</option>
+                            <option value="PJ Pencucian">PJ Pencucian</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-gray-300">Batal</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-sky-500 text-white font-semibold rounded hover:bg-sky-600">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- Modal Tambah -->
-<div id="modalForm" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-xl shadow-sky-500 w-full max-w-lg p-6 border-t-4 border-sky-500">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold text-sky-600">Tambah Karyawan</h2>
-            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+    <!-- Modal Edit -->
+    <div id="modalEdit" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl shadow-sky-500 w-full max-w-lg p-6 border-t-4 border-sky-500">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-sky-600">Edit Karyawan</h2>
+                <button onclick="closeModalEdit()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <form id="formEdit" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" id="editId" name="id">
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1">Nama</label>
+                        <input type="text" id="editName" name="nama"
+                            class="w-full border border-gray-300 rounded-md px-4 py-2" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
+                        <select id="editTugas" name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2"
+                            required>
+                            <option value="">-- Pilih Tugas --</option>
+
+                            <!-- Tugas utama -->
+                            <option value="Persiapan">Persiapan</option>
+                            <option value="Pengolahan">Pengolahan</option>
+                            <option value="Pemorsian">Pemorsian</option>
+                            <option value="Distribusi">Distribusi</option>
+                            <option value="Kebersihan">Kebersihan</option>
+                            <option value="Pencucian">Pencucian</option>
+                            <option value="Asisten Lapangan">Asisten Lapangan</option>
+
+                            <!-- Koordinator -->
+                            <option value="Koordinator Persiapan">Koordinator Persiapan</option>
+                            <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
+                            <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
+                            <option value="Koordinator Distribusi">Koordinator Distribusi</option>
+                            <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
+                            <option value="Koordinator Pencucian">Koordinator Pencucian</option>
+
+                            <!-- PJ -->
+                            <option value="PJ Persiapan">PJ Persiapan</option>
+                            <option value="PJ Pengolahan">PJ Pengolahan</option>
+                            <option value="PJ Pemorsian">PJ Pemorsian</option>
+                            <option value="PJ Distribusi">PJ Distribusi</option>
+                            <option value="PJ Kebersihan">PJ Kebersihan</option>
+                            <option value="PJ Pencucian">PJ Pencucian</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeModalEdit()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-gray-300">Batal</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-sky-500 text-white font-semibold rounded hover:bg-sky-600">Simpan</button>
+                </div>
+            </form>
         </div>
-
-        <form action="{{ route('karyawan.store') }}" method="POST">
-            @csrf
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 font-semibold mb-1">Nama</label>
-                    <input type="text" name="nama" class="w-full border border-gray-300 rounded-md px-4 py-2"
-                        placeholder="Masukkan nama" required>
-                </div>
-
-                <div>
-                    <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
-                    <select name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2" required>
-                        <option value="">-- Pilih Tugas --</option>
-
-                        <!-- Tugas utama -->
-                        <option value="Persiapan">Persiapan</option>
-                        <option value="Pengolahan">Pengolahan</option>
-                        <option value="Pemorsian">Pemorsian</option>
-                        <option value="Distribusi">Distribusi</option>
-                        <option value="Kebersihan">Kebersihan</option>
-                        <option value="Pencucian">Pencucian</option>
-                        <option value="Asisten Lapangan">Asisten Lapangan</option>
-
-                        <!-- Koordinator -->
-                        <option value="Koordinator Persiapan">Koordinator Persiapan</option>
-                        <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
-                        <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
-                        <option value="Koordinator Distribusi">Koordinator Distribusi</option>
-                        <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
-                        <option value="Koordinator Pencucian">Koordinator Pencucian</option>
-
-                        <!-- PJ -->
-                        <option value="PJ Persiapan">PJ Persiapan</option>
-                        <option value="PJ Pengolahan">PJ Pengolahan</option>
-                        <option value="PJ Pemorsian">PJ Pemorsian</option>
-                        <option value="PJ Distribusi">PJ Distribusi</option>
-                        <option value="PJ Kebersihan">PJ Kebersihan</option>
-                        <option value="PJ Pencucian">PJ Pencucian</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button" onclick="closeModal()"
-                    class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-gray-300">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-sky-500 text-white font-semibold rounded hover:bg-sky-600">Simpan</button>
-            </div>
-        </form>
     </div>
-</div>
 
-<!-- Modal Edit -->
-<div id="modalEdit" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-xl shadow-sky-500 w-full max-w-lg p-6 border-t-4 border-sky-500">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold text-sky-600">Edit Karyawan</h2>
-            <button onclick="closeModalEdit()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-        </div>
+    <script>
+    function searchTable() {
 
-        <form id="formEdit" method="POST">
-            @csrf
-            @method('PUT')
-            <input type="hidden" id="editId" name="id">
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('absensiTable');
+        const tr = table.getElementsByTagName('tr');
 
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 font-semibold mb-1">Nama</label>
-                    <input type="text" id="editName" name="nama"
-                        class="w-full border border-gray-300 rounded-md px-4 py-2" required>
-                </div>
-
-                <div>
-                    <label class="block text-gray-700 font-semibold mb-1">Tugas</label>
-                    <select id="editTugas" name="tugas" class="w-full border border-gray-300 rounded-md px-4 py-2"
-                        required>
-                        <option value="">-- Pilih Tugas --</option>
-
-                        <!-- Tugas utama -->
-                        <option value="Persiapan">Persiapan</option>
-                        <option value="Pengolahan">Pengolahan</option>
-                        <option value="Pemorsian">Pemorsian</option>
-                        <option value="Distribusi">Distribusi</option>
-                        <option value="Kebersihan">Kebersihan</option>
-                        <option value="Pencucian">Pencucian</option>
-                        <option value="Asisten Lapangan">Asisten Lapangan</option>
-
-                        <!-- Koordinator -->
-                        <option value="Koordinator Persiapan">Koordinator Persiapan</option>
-                        <option value="Koordinator Pengolahan">Koordinator Pengolahan</option>
-                        <option value="Koordinator Pemorsian">Koordinator Pemorsian</option>
-                        <option value="Koordinator Distribusi">Koordinator Distribusi</option>
-                        <option value="Koordinator Kebersihan">Koordinator Kebersihan</option>
-                        <option value="Koordinator Pencucian">Koordinator Pencucian</option>
-
-                        <!-- PJ -->
-                        <option value="PJ Persiapan">PJ Persiapan</option>
-                        <option value="PJ Pengolahan">PJ Pengolahan</option>
-                        <option value="PJ Pemorsian">PJ Pemorsian</option>
-                        <option value="PJ Distribusi">PJ Distribusi</option>
-                        <option value="PJ Kebersihan">PJ Kebersihan</option>
-                        <option value="PJ Pencucian">PJ Pencucian</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button" onclick="closeModalEdit()"
-                    class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-gray-300">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-sky-500 text-white font-semibold rounded hover:bg-sky-600">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function openModal() {
-    document.getElementById('modalForm').classList.remove('hidden');
-}
-
-function closeModal() {
-    document.getElementById('modalForm').classList.add('hidden');
-}
-
-function editData(data) {
-    const form = document.getElementById('formEdit');
-    form.action = `/karyawan/${data.id}`;
-
-    document.getElementById('editId').value = data.id;
-    document.getElementById('editName').value = data.nama;
-    document.getElementById('editTugas').value = data.tugas;
-
-    document.getElementById('modalEdit').classList.remove('hidden');
-}
-
-function closeModalEdit() {
-    document.getElementById('modalEdit').classList.add('hidden');
-}
-
-function confirmDelete(event, nama) {
-    event.preventDefault(); // hentikan submit sementara
-    if (confirm(`Yakin ingin menghapus karyawan "${nama}"? Data absensi akan tetap ada.`)) {
-        event.target.submit(); // lanjutkan submit
+        for (let i = 1; i < tr.length; i++) { // mulai dari 1 untuk lewati header
+            const tdNama = tr[i].getElementsByTagName('td')[1]; // kolom Nama (index 1)
+            const tdTugas = tr[i].getElementsByTagName('td')[2]; // kolom Tugas (index 2)
+            if (tdNama || tdTugas) {
+                const namaText = tdNama.textContent || tdNama.innerText;
+                const tugasText = tdTugas.textContent || tdTugas.innerText;
+                if (namaText.toLowerCase().indexOf(filter) > -1 || tugasText.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
     }
-    return false;
-}
-</script>
-@endsection
+
+    function openModal() {
+        document.getElementById('modalForm').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('modalForm').classList.add('hidden');
+    }
+
+    function editData(data) {
+        const form = document.getElementById('formEdit');
+        form.action = `/karyawan/${data.id}`;
+
+        document.getElementById('editId').value = data.id;
+        document.getElementById('editName').value = data.nama;
+        document.getElementById('editTugas').value = data.tugas;
+
+        document.getElementById('modalEdit').classList.remove('hidden');
+    }
+
+    function closeModalEdit() {
+        document.getElementById('modalEdit').classList.add('hidden');
+    }
+
+    function confirmDelete(event, nama) {
+        event.preventDefault(); // hentikan submit sementara
+        if (confirm(`Yakin ingin menghapus karyawan "${nama}"? Data absensi akan tetap ada.`)) {
+            event.target.submit(); // lanjutkan submit
+        }
+        return false;
+    }
+    </script>
+    @endsection
