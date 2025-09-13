@@ -58,13 +58,14 @@ class KaryawanController extends Controller
     /**
      * Hapus data karyawan.
      */
-    public function destroy($id)
-    {
-        $karyawan = Karyawan::findOrFail($id);
-        $karyawan->delete();
+   public function destroy($id)
+{
+    $karyawan = Karyawan::findOrFail($id);
+    $karyawan->delete(); // Absensi tetap ada
+    return redirect()->back()->with('success', '🗑️ Data karyawan berhasil dihapus!');
+}
 
-        return redirect()->back()->with('success', '🗑️ Data karyawan berhasil dihapus!');
-    }
+
 
     /**
      * Export data karyawan ke PDF.

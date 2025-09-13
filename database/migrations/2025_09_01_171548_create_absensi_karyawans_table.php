@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('absensi_karyawans', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('karyawan_id'); // relasi ke tabel karyawan
+
+            // Karyawan bisa null agar histori tidak hilang saat karyawan dihapus
+          $table->unsignedBigInteger('karyawan_id')->nullable();
+
             $table->date('tanggal');
             $table->enum('status', ['hadir', 'izin', 'sakit', 'alfa']); // contoh status
             $table->time('waktu_masuk')->nullable();
@@ -25,11 +28,16 @@ return new class extends Migration
             $table->decimal('longitude', 10, 7)->nullable(); // koordinat
             $table->timestamps();
 
-            // foreign key
-            $table->foreign('karyawan_id')
-                  ->references('id')
-                  ->on('karyawans')
-                  ->onDelete('cascade');
+            // Foreign key dengan set null saat karyawan dihapus
+$table->foreign('karyawan_id')
+      ->references('id')
+      ->on('karyawans')
+      ->onDelete('set null'); // atau 'no action'
+
+
+            // Index untuk pencarian cepat berdasarkan karyawan
+            $table->index('karyawan_id');
+            $table->index('tanggal');
         });
     }
 
@@ -38,6 +46,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('absensi_karyawans', function (Blueprint $table) {
+            $table->dropForeign(['karyawan_id']);
+            $table->dropIndex(['karyawan_id']);
+            $table->dropIndex(['tanggal']);
+        });
+
         Schema::dropIfExists('absensi_karyawans');
     }
 };

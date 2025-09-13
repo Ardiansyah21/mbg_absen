@@ -15,7 +15,7 @@ class AdminController extends Controller
     /**
      * Dashboard utama admin
      */
- public function index(Request $request)
+    public function index(Request $request)
 {
     $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
@@ -93,54 +93,61 @@ class AdminController extends Controller
     /**
      * Halaman daftar absensi
      */
-    public function absen(Request $request)
-    {
-        $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
+   public function absen(Request $request)
+{
+    $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
-        $bulan = Carbon::parse($tanggal)->month;
-        $tahun = Carbon::parse($tanggal)->year;
 
-        $karyawanList = Karyawan::with('absensis')->orderBy('nama')->get();
+    $bulan = Carbon::parse($tanggal)->month;
+    $tahun = Carbon::parse($tanggal)->year;
 
-        $sudahAbsen = $karyawanList->filter(function ($k) use ($tanggal) {
-            return $k->absensis->where('tanggal', $tanggal)->isNotEmpty();
+    $karyawanList = Karyawan::with('absensis')->orderBy('nama')->get();
+
+    $sudahAbsen = $karyawanList->filter(function ($k) use ($tanggal) {
+        return $k->absensis->where('tanggal', $tanggal)->isNotEmpty();
+    });
+
+    $belumAbsen = $karyawanList->filter(function ($k) use ($tanggal) {
+        return $k->absensis->where('tanggal', $tanggal)->isEmpty();
+    });
+
+    $rekapAbsensi = $karyawanList->map(function ($karyawan) use ($bulan, $tahun) {
+        $totalHari = Carbon::parse("$tahun-$bulan-01")->daysInMonth;
+
+        $absensiBulanIni = $karyawan->absensis->filter(function ($a) use ($bulan, $tahun) {
+            return Carbon::parse($a->tanggal)->month == $bulan &&
+                   Carbon::parse($a->tanggal)->year == $tahun;
         });
 
-        $belumAbsen = $karyawanList->filter(function ($k) use ($tanggal) {
-            return $k->absensis->where('tanggal', $tanggal)->isEmpty();
-        });
+        $jumlahHadir = $absensiBulanIni->filter(function ($a) {
+            return Str::lower(trim($a->status)) === 'hadir';
+        })->count();
 
-        $rekapAbsensi = $karyawanList->map(function ($karyawan) use ($bulan, $tahun) {
-            $totalHari = Carbon::parse("$tahun-$bulan-01")->daysInMonth;
+        $jumlahTidakHadir = $totalHari - $jumlahHadir;
 
-            $absensiBulanIni = $karyawan->absensis->filter(function ($a) use ($bulan, $tahun) {
-                return Carbon::parse($a->tanggal)->month == $bulan &&
-                       Carbon::parse($a->tanggal)->year == $tahun;
-            });
+        return (object) [
+            'nama'              => $karyawan->nama,
+            'tugas'             => $karyawan->tugas,
+            'jumlah_hadir'      => $jumlahHadir,
+            'jumlah_tidak_hadir'=> $jumlahTidakHadir,
+            'total_hari'        => $totalHari,
+        ];
+    });
 
-            $jumlahHadir = $absensiBulanIni->filter(function ($a) {
-                return Str::lower(trim($a->status)) === 'hadir';
-            })->count();
+    // Kirim $duplikatIds juga ke view
+    $duplikatIds = AbsensiKaryawan::where('tanggal', $tanggal)->pluck('id')->toArray();
 
-            $jumlahTidakHadir = $totalHari - $jumlahHadir;
+return view('admin.absendata', compact(
+    'tanggal',
+    'karyawanList',
+    'sudahAbsen',
+    'belumAbsen',
+    'rekapAbsensi',
+    'duplikatIds'
+));
 
-            return (object) [
-                'nama'              => $karyawan->nama,
-                'tugas'             => $karyawan->tugas,
-                'jumlah_hadir'      => $jumlahHadir,
-                'jumlah_tidak_hadir'=> $jumlahTidakHadir,
-                'total_hari'        => $totalHari,
-            ];
-        });
+}
 
-        return view('admin.absendata', compact(
-            'tanggal',
-            'karyawanList',
-            'sudahAbsen',
-            'belumAbsen',
-            'rekapAbsensi'
-        ));
-    }
 
     /**
      * Export PDF Rekap Bulanan

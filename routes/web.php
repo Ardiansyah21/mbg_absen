@@ -57,6 +57,9 @@ Route::get('/admin/absensi', [AdminController::class, 'absen'])->name('admin.abs
 Route::get('/admin/absensi/all', [AdminController::class, 'allAbsensi'])->name('absensi.all');
 Route::get('/admin/rekap/pdf', [AdminController::class, 'exportPdf'])->name('admin.rekap.pdf');
 Route::get('admin/absen/export-pdf-harian', [AdminController::class, 'exportPDFPerHari'])->name('admin.export-pdf-harian');
+Route::post('/absensi/duplikat', [AdminController::class, 'duplikat'])->name('absensi.duplikat');
+
+
 
 Route::get('/karyawan', [KaryawanController::class, 'index'])->name('karyawan.index');
 Route::post('/karyawan/store', [KaryawanController::class, 'store'])->name('karyawan.store');
