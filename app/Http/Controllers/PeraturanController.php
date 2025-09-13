@@ -20,7 +20,7 @@ class PeraturanController extends Controller
     {
         $count = Peraturan::count();
 
-        if($count >= 6) {
+        if($count >= 7) {
             return redirect()->back()->with('error', 'Data peraturan sudah lengkap. Silahkan edit data yang ada.');
         }
 
