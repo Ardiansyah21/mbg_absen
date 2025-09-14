@@ -440,10 +440,13 @@
             tandaTanganInput.value = tandaTanganData;
             localStorage.setItem('tanda_tangan', tandaTanganData);
 
-            // Reset jika sudah absen keluar
-            if (localStorage.getItem('last_absensi') === 'keluar') {
+            // Reset otomatis setelah keluar
+            const last = localStorage.getItem('last_absensi');
+            if (last === 'keluar') {
+                statusMsg.textContent = "✅ Siap untuk absensi berikutnya!";
+                // warna default
+                scanner.style.backgroundColor = '#e5e7eb';
                 localStorage.removeItem('last_absensi');
-                updateScannerColor();
                 return;
             }
 
@@ -456,7 +459,7 @@
 
                 const kantorLat = -6.691640391234676;
                 const kantorLng = 106.88689131829916;
-                const radiusM = 30;
+                const radiusM = 100;
 
                 function getDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371000;
@@ -498,18 +501,30 @@
                     if (data.success) {
                         const tipe = data.data.waktu_keluar ? 'keluar' : 'masuk';
                         localStorage.setItem('last_absensi', tipe);
-                        updateScannerColor();
-                        statusMsg.textContent =
-                            `✅ ${data.message} (jarak ${Math.round(distance)} m)`;
+                        // ubah warna sesuai tipe
                         if (tipe === 'masuk') {
+                            scanner.style.backgroundColor =
+                                '#ef4444'; // merah kalau belum keluar
+                            statusMsg.textContent =
+                                `✅ Absen masuk berhasil, belum absen keluar!`;
                             showNotif("✅ Absen masuk berhasil, belum absen keluar!",
                                 'success');
                         } else {
+                            scanner.style.backgroundColor =
+                                '#22c55e'; // ijo kalau keluar
+                            statusMsg.textContent = `✅ Absen keluar berhasil!`;
                             showNotif("✅ Absen keluar berhasil!", 'success');
+                            // reset otomatis ke warna default setelah 2 detik
+                            setTimeout(() => {
+                                scanner.style.backgroundColor = '#e5e7eb';
+                                localStorage.removeItem('last_absensi');
+                                statusMsg.textContent =
+                                    "Siap untuk absensi berikutnya!";
+                            }, 2000);
                         }
                     } else {
                         statusMsg.textContent =
-                            `❌ ${data.message||"Gagal mencatat absensi."}`;
+                            `❌ ${data.message || "Gagal mencatat absensi."}`;
                         scanner.style.backgroundColor = '#ef4444';
                         showNotif(data.message || "Gagal mencatat absensi.", 'error');
                     }
