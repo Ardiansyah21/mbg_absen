@@ -334,19 +334,17 @@
         // ================= Update Scanner Color =================
         function updateScannerColor() {
             const lastAbsensi = localStorage.getItem('last_absensi');
-
             if (!lastAbsensi) {
-                scanner.style.backgroundColor = '#e5e7eb'; // default
+                scanner.style.backgroundColor = '#e5e7eb';
                 statusMsg.textContent = '';
             } else if (lastAbsensi === 'masuk') {
-                scanner.style.backgroundColor = '#ef4444'; // merah
+                scanner.style.backgroundColor = '#ef4444';
                 statusMsg.textContent = "⚠️ Anda belum absen keluar!";
             } else if (lastAbsensi === 'keluar') {
-                scanner.style.backgroundColor = '#22c55e'; // hijau
+                scanner.style.backgroundColor = '#22c55e';
                 statusMsg.textContent = "✅ Anda sudah absen keluar.";
             }
         }
-
         updateScannerColor();
 
         // ================= Submit Registrasi =================
@@ -436,25 +434,52 @@
 
         // ================= Fingerprint =================
         scanner.addEventListener('click', () => {
-            if (!selectedKaryawanId) {
-                statusMsg.textContent = "Silakan pilih karyawan dulu!";
-                return;
-            }
-
+            if (!selectedKaryawanId) return statusMsg.textContent = "Silakan pilih karyawan dulu!";
             const tandaTanganData = tandaTanganInput.value || signaturePad.toDataURL();
             if (!tandaTanganData) return alert("Tanda tangan kosong!");
             tandaTanganInput.value = tandaTanganData;
             localStorage.setItem('tanda_tangan', tandaTanganData);
 
-            // Reset warna sementara sebelum geolocation
-            scanner.style.backgroundColor = '#facc15'; // kuning sementara
-            statusMsg.textContent = "⏳ Memproses absensi...";
+            // Reset jika sudah absen keluar
+            if (localStorage.getItem('last_absensi') === 'keluar') {
+                localStorage.removeItem('last_absensi');
+                updateScannerColor();
+                return;
+            }
 
             if (!navigator.geolocation) return alert("Geolocation tidak didukung browser ini.");
+            statusMsg.textContent = "⏳ Mengambil lokasi...";
 
             navigator.geolocation.getCurrentPosition(pos => {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
+
+                const kantorLat = -6.691640391234676;
+                const kantorLng = 106.88689131829916;
+                const radiusM = 30;
+
+                function getDistance(lat1, lon1, lat2, lon2) {
+                    const R = 6371000;
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLon = (lon2 - lon1) * Math.PI / 180;
+                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math
+                        .cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    return R * c;
+                }
+
+                const distance = getDistance(lat, lng, kantorLat, kantorLng);
+
+                if (distance > radiusM) {
+                    statusMsg.textContent =
+                        `⚠️ Di luar lokasi kantor (${Math.round(distance)} m), pilih tipe izin`;
+                    showNotif(`Di luar lokasi kantor (${Math.round(distance)} m)`, 'error');
+                    izinDiv.classList.remove('hidden');
+                    return;
+                }
+
+                statusMsg.textContent =
+                    `⏳ Mengirim absensi... (jarak ${Math.round(distance)} m)`;
 
                 fetch("{{ route('absensi.fingerprint') }}", {
                     method: "POST",
@@ -473,24 +498,18 @@
                     if (data.success) {
                         const tipe = data.data.waktu_keluar ? 'keluar' : 'masuk';
                         localStorage.setItem('last_absensi', tipe);
-
-                        // Efek hijau atau merah 2 detik, lalu reset warna sesuai status
-                        scanner.style.backgroundColor = tipe === 'masuk' ? '#ef4444' :
-                            '#22c55e';
-                        setTimeout(() => updateScannerColor(), 2000);
-
+                        updateScannerColor();
+                        statusMsg.textContent =
+                            `✅ ${data.message} (jarak ${Math.round(distance)} m)`;
                         if (tipe === 'masuk') {
-                            statusMsg.textContent =
-                                "✅ Absen masuk berhasil! Belum absen keluar.";
                             showNotif("✅ Absen masuk berhasil, belum absen keluar!",
                                 'success');
                         } else {
-                            statusMsg.textContent = "✅ Absen keluar berhasil!";
                             showNotif("✅ Absen keluar berhasil!", 'success');
                         }
                     } else {
                         statusMsg.textContent =
-                            `❌ ${data.message || "Gagal mencatat absensi."}`;
+                            `❌ ${data.message||"Gagal mencatat absensi."}`;
                         scanner.style.backgroundColor = '#ef4444';
                         showNotif(data.message || "Gagal mencatat absensi.", 'error');
                     }
@@ -513,6 +532,7 @@
                 maximumAge: 0
             });
         });
+
         // ================= Reset =================
         resetBtn.addEventListener('click', () => {
             selectedKaryawanId = null;
