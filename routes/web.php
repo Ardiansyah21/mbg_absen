@@ -57,7 +57,11 @@ Route::get('/admin/absensi', [AdminController::class, 'absen'])->name('admin.abs
 Route::get('/admin/absensi/all', [AdminController::class, 'allAbsensi'])->name('absensi.all');
 Route::get('/admin/rekap/pdf', [AdminController::class, 'exportPdf'])->name('admin.rekap.pdf');
 Route::get('admin/absen/export-pdf-harian', [AdminController::class, 'exportPDFPerHari'])->name('admin.export-pdf-harian');
-Route::post('/absensi/duplikat', [AdminController::class, 'duplikat'])->name('absensi.duplikat');
+Route::delete('/absensi/{id}', [AdminController::class, 'destroy'])->name('absensi.destroy');
+Route::post('/absensi/{id}/pengganti', [AdminController::class, 'updatePengganti'])->name('absensi.pengganti');
+Route::post('/absensi/{id}/duplikat', [AdminController::class, 'duplicateAbsensi'])->name('absensi.duplikat');
+
+
 
 
 

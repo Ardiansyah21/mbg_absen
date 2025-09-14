@@ -76,6 +76,8 @@
                 <th>Status</th>
                 <th>Waktu Masuk</th>
                 <th>Waktu Keluar</th>
+                <th>Nama Pengganti</th>
+                <th>Keterangan Pengganti</th>
                 <th>Tanda Tangan Karyawan</th>
             </tr>
         </thead>
@@ -88,6 +90,8 @@
                 <td>{{ $k->status }}</td>
                 <td>{{ $k->waktu_masuk }}</td>
                 <td>{{ $k->waktu_keluar }}</td>
+                <td>{{ $k->nama_pengganti ?? '-' }}</td>
+                <td>{{ $k->keterangan_pengganti ?? '-' }}</td>
                 <td>
                     @if($k->tanda_tangan)
                     <img src="{{ $k->tanda_tangan }}" alt="Tanda Tangan" style="width:100px; height:auto;">
@@ -100,7 +104,7 @@
 
             @if($rekapHarian->isEmpty())
             <tr>
-                <td colspan="7">Belum ada data absensi hari ini.</td>
+                <td colspan="9">Belum ada data absensi hari ini.</td>
             </tr>
             @endif
         </tbody>

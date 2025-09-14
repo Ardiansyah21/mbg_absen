@@ -3,6 +3,21 @@
 @section('content')
 <div class="container mx-auto p-4">
 
+
+    @if(session('success'))
+    <div class="mb-4 p-4 rounded bg-green-100 border border-green-400 text-green-700 flex justify-between items-center">
+        <span>{{ session('success') }}</span>
+        <button onclick="this.parentElement.remove()" class="text-green-700 font-bold">&times;</button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="mb-4 p-4 rounded bg-red-100 border border-red-400 text-red-700 flex justify-between items-center">
+        <span>{{ session('error') }}</span>
+        <button onclick="this.parentElement.remove()" class="text-red-700 font-bold">&times;</button>
+    </div>
+    @endif
+
     <!-- Header & Filters -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h1 class="text-2xl font-bold text-blue-500">Daftar Absen -
@@ -40,73 +55,104 @@
 
         </form>
     </div>
-    <!-- Tabel Absensi -->
-    <div class="overflow-x-auto rounded-2xl shadow-md shadow-sky-200/70">
-        <table class="min-w-full text-sm text-left text-gray-700" id="absensiTable">
-            <thead class="bg-sky-500 text-white">
-                <tr>
-                    <th class="px-6 py-3">No</th>
-                    <th class="px-6 py-3">Nama</th>
-                    <th class="px-6 py-3">Tugas</th>
-                    <th class="px-6 py-3">Status</th>
-                    <th class="px-6 py-3">Tanggal</th>
-                    <th class="px-6 py-3">Hari</th>
-                    <th class="px-6 py-3">Jam Masuk</th>
-                    <th class="px-6 py-3">Jam Keluar</th>
-                    <th class="px-6 py-3">Total Jam Kerja</th>
-                    <th class="px-6 py-3">Tanda Tangan</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                @php $no = 1; @endphp
-                @foreach($sudahAbsen as $karyawan)
-                @foreach($karyawan->absensis as $absensi)
-                <tr class="hover:bg-sky-50 transition">
-                    <td class="px-6 py-4">{{ $no++ }}</td>
-                    <td class="px-6 py-4 font-medium">{{ $karyawan->nama }}</td>
-                    <td class="px-6 py-4">{{ $karyawan->tugas ?? '-' }}</td>
-                    <td class="px-6 py-4">{{ $absensi->status }}</td>
-                    <td class="px-6 py-4">{{ \Carbon\Carbon::parse($absensi->tanggal)->translatedFormat('d F Y') }}</td>
-                    <td class="px-6 py-4">{{ $absensi->hari }}</td>
-                    <td class="px-6 py-4">{{ $absensi->waktu_masuk }}</td>
-                    <td class="px-6 py-4">{{ $absensi->waktu_keluar ?? '-' }}</td>
-                    <td class="px-6 py-4">
-                        @if($absensi->waktu_masuk && $absensi->waktu_keluar)
-                        @php
-                        $masuk = \Carbon\Carbon::parse($absensi->waktu_masuk);
-                        $keluar = \Carbon\Carbon::parse($absensi->waktu_keluar);
-                        $diff = $keluar->diff($masuk);
+    <div class="w-full overflow-x-auto rounded-2xl shadow-md shadow-sky-200/70">
+        <div class="inline-block min-w-full">
+            <table id="absensiTable" class="table-auto text-sm text-left text-gray-700 w-full">
+                <thead class="bg-sky-500 text-white">
+                    <tr>
+                        <th class="px-3 py-2">No</th>
+                        <th class="px-3 py-2">Nama</th>
+                        <th class="px-3 py-2">Tugas</th>
+                        <th class="px-3 py-2">Status</th>
+                        <th class="px-3 py-2">Hari & Tanggal</th>
+                        <th class="px-3 py-2">Jam Masuk</th>
+                        <th class="px-3 py-2">Jam Keluar</th>
+                        <th class="px-3 py-2">Total Jam Kerja</th>
+                        <th class="px-3 py-2">Tanda Tangan</th>
+                        <th class="px-3 py-2">Pengganti & Keterangan</th>
+                        <th class="px-3 py-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody class=" divide-y divide-gray-200">
+                    @php $no = 1; @endphp
+                    @foreach($sudahAbsen as $karyawan)
+                    @foreach($karyawan->absensis as $absensi)
+                    <tr class="hover:bg-sky-50 transition">
+                        <td class="px-3 py-2">{{ $no++ }}</td>
+                        <td class="px-3 py-2 font-medium">{{ $karyawan->nama }}</td>
+                        <td class="px-3 py-2">{{ $karyawan->tugas ?? '-' }}</td>
+                        <td class="px-3 py-2">{{ $absensi->status }}</td>
+                        <td class="px-3 py-2">{{ $absensi->hari }},
+                            {{ \Carbon\Carbon::parse($absensi->tanggal)->translatedFormat('d F Y') }}</td>
+                        <td class="px-3 py-2">{{ $absensi->waktu_masuk }}</td>
+                        <td class="px-3 py-2">{{ $absensi->waktu_keluar ?? '-' }}</td>
+                        <td class="px-3 py-2">
+                            @if($absensi->waktu_masuk && $absensi->waktu_keluar)
+                            @php
+                            $masuk = \Carbon\Carbon::parse($absensi->waktu_masuk);
+                            $keluar = \Carbon\Carbon::parse($absensi->waktu_keluar);
+                            $diff = $keluar->diff($masuk);
+                            $jamKerja = $diff->h + ($diff->d * 24);
+                            $menitKerja = $diff->i;
+                            $detikKerja = $diff->s;
+                            @endphp
+                            {{ $jamKerja }} jam {{ $menitKerja }} menit {{ $detikKerja }} detik
+                            @else
+                            -
+                            @endif
+                        </td>
+                        <td class="px-3 py-2">
+                            @if($absensi->tanda_tangan)
+                            <img src="{{ $absensi->tanda_tangan }}" alt="Tanda Tangan"
+                                class="w-16 h-12 object-contain rounded shadow">
+                            @else
+                            -
+                            @endif
+                        </td>
+                        <td class="px-3 py-2">
+                            @if($absensi->nama_pengganti)
+                            <div>
+                                <p><span class="font-medium">Nama:</span> {{ $absensi->nama_pengganti }}</p>
+                                <p><span class="font-medium">Ket:</span> Hadir menggantikan {{ $karyawan->nama }}</p>
+                            </div>
+                            @else
+                            -
+                            @endif
+                        </td>
 
-                        $jamKerja = $diff->h + ($diff->d * 24); // hitung jam termasuk jika beda hari
-                        $menitKerja = $diff->i;
-                        $detikKerja = $diff->s;
-                        @endphp
-                        {{ $jamKerja }} jam {{ $menitKerja }} menit {{ $detikKerja }} detik
-                        @else
-                        -
-                        @endif
-                    </td>
+                        <td class="px-3 py-2 text-center sticky right-0 bg-white">
+                            <div class="flex flex-col gap-2 items-center">
+                                <form action="{{ route('absensi.destroy', $absensi->id) }}" method="POST"
+                                    onsubmit="return confirm('Yakin mau hapus?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs shadow w-24">Hapus</button>
+                                </form>
+                                <a href="javascript:void(0)" onclick="openDuplikatModal({{ $absensi->id }})"
+                                    class="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-xs shadow w-24 text-center">
+                                    Duplikat
+                                </a>
 
-                    <td class="px-6 py-4">
-                        @if($absensi->tanda_tangan)
-                        <img src="{{ $absensi->tanda_tangan }}" alt="Tanda Tangan"
-                            class="w-16 h-12 object-contain rounded shadow">
-                        @else
-                        -
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-                @endforeach
-
-                @if($sudahAbsen->isEmpty())
-                <tr>
-                    <td colspan="10" class="text-center py-4">Belum ada yang absen di tanggal ini.</td>
-                </tr>
-                @endif
-            </tbody>
-        </table>
+                                <a href="javascript:void(0)" onclick="openModal({{ $absensi->id }})"
+                                    class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs shadow w-24 text-center">Pengganti</a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                    @endforeach
+                    @if($sudahAbsen->isEmpty())
+                    <tr>
+                        <td colspan="11" class="text-center py-4">Belum ada yang absen di tanggal ini.</td>
+                    </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
     </div>
+
+
+
 
 
 
@@ -187,11 +233,122 @@
     </div>
 
 
+    <!-- Modal Pengganti -->
+    <div id="modalPengganti" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl shadow-green-500 w-full max-w-md p-6 border-t-4 border-green-500">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-green-600">Form Pengganti</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <!-- Isi Form -->
+            <form id="formPengganti" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Pengganti</label>
+                    <input type="text" name="nama_pengganti"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Keterangan</label>
+                    <textarea name="keterangan" rows="3"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-green-500 focus:border-green-500"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeModal()"
+                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Batal</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Simpan</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- Modal Duplikat -->
+    <div id="modalDuplikat" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl shadow-yellow-500 w-full max-w-md p-6 border-t-4 border-yellow-500">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-yellow-600">Duplikat Absensi</h2>
+                <button onclick="closeDuplikatModal()"
+                    class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <form id="formDuplikat" method="POST" class="space-y-4">
+                @csrf
+
+                <!-- Tanggal baru -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Tanggal Baru</label>
+                    <input type="date" name="tanggal"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"
+                        required>
+                </div>
+
+                <!-- Jam Masuk -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Jam Masuk</label>
+                    <input type="time" name="waktu_masuk"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500">
+                </div>
+
+                <!-- Jam Keluar -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Jam Keluar</label>
+                    <input type="time" name="waktu_keluar"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500">
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <select name="status"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500">
+                        <option value="hadir">Hadir</option>
+                        <option value="izin">Izin</option>
+                        <option value="sakit">Sakit</option>
+                        <option value="alfa">Alfa</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeDuplikatModal()"
+                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Batal</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Duplikat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
 
 
 </div>
 <!-- Script Filter & Search -->
 <script>
+function openDuplikatModal(absensiId) {
+    let form = document.getElementById('formDuplikat');
+    form.action = `/absensi/${absensiId}/duplikat`;
+    document.getElementById('modalDuplikat').classList.remove('hidden');
+}
+
+function closeDuplikatModal() {
+    document.getElementById('modalDuplikat').classList.add('hidden');
+}
+
+function openModal(absensiId) {
+    let form = document.getElementById('formPengganti');
+    form.action = "{{ url('/absensi') }}/" + absensiId + "/pengganti";
+    document.getElementById('modalPengganti').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('modalPengganti').classList.add('hidden');
+}
 document.getElementById('lihatSemua').addEventListener('click', () => {
     fetch("/admin/absensi/all") // endpoint baru untuk semua data
         .then(res => res.json())
@@ -219,20 +376,21 @@ document.getElementById('lihatSemua').addEventListener('click', () => {
 
 
 function searchTable() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const table = document.getElementById("absensiTable");
-    const rows = table.getElementsByTagName("tr");
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('absensiTable'); // pastikan ID tabel sesuai
+    const trs = table.getElementsByTagName('tr');
 
-    for (let i = 1; i < rows.length; i++) {
-        const cells = rows[i].getElementsByTagName("td");
-        let match = false;
-        for (let j = 1; j < 3; j++) { // Nama & Tugas
-            if (cells[j].textContent.toLowerCase().includes(input)) {
-                match = true;
-                break;
-            }
+    for (let i = 1; i < trs.length; i++) { // mulai dari 1 agar header tidak ikut
+        const tds = trs[i].getElementsByTagName('td');
+        let nama = tds[1]?.textContent.toLowerCase() || ''; // kolom Nama
+        let tugas = tds[2]?.textContent.toLowerCase() || ''; // kolom Tugas
+
+        if (nama.includes(filter) || tugas.includes(filter)) {
+            trs[i].style.display = '';
+        } else {
+            trs[i].style.display = 'none';
         }
-        rows[i].style.display = match ? "" : "none";
     }
 }
 

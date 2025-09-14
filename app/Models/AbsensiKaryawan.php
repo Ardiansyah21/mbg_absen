@@ -15,6 +15,8 @@ class AbsensiKaryawan extends Model
         'waktu_keluar',
         'tanda_tangan',
         'hari',
+        'nama_pengganti',        
+        'keterangan_pengganti', 
     ];
 
     
