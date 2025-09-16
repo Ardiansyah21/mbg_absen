@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('tanda_tangan')->nullable(); // path atau base64 tanda tangan
             $table->string('hari');
             $table->string('nama_pengganti')->nullable();
-$table->text('keterangan_pengganti')->nullable();
+            $table->text('keterangan_pengganti')->nullable();
             $table->string('metode')->nullable(); // fingerprint / izin
             $table->decimal('latitude', 10, 7)->nullable(); // koordinat
             $table->decimal('longitude', 10, 7)->nullable(); // koordinat

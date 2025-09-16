@@ -46,6 +46,22 @@ Route::post('/absensi/store', [AbsensiKaryawanController::class, 'store'])->name
 Route::get('/absensi/{id}/edit', [AbsensiKaryawanController::class, 'edit'])->name('absensi.edit');
 Route::put('/absensi/{id}', [AbsensiKaryawanController::class, 'update'])->name('absensi.update');
 Route::delete('/absensi/{id}', [AbsensiKaryawanController::class, 'destroy'])->name('absensi.destroy');
+Route::get('/cek-status/{id}', function($id) {
+    $absensi = \App\Models\AbsensiKaryawan::where('karyawan_id', $id)
+        ->latest()
+        ->first();
+
+    if ($absensi && $absensi->waktu_masuk && !$absensi->waktu_keluar) {
+        return response()->json([
+            'status' => 'masuk',
+            'waktu_masuk' => $absensi->waktu_masuk
+        ]);
+    }
+
+    return response()->json([
+        'status' => 'keluar'
+    ]);
+});
 
 
 

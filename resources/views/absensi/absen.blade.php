@@ -3,11 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPPG Jambuluwuk</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css','resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.0/dist/signature_pad.umd.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 
@@ -136,8 +138,7 @@
                         <div>
                             <label for="karyawan_id" class="block text-gray-700 mb-2 font-medium">Nama Karyawan</label>
                             <select id="karyawan_id" name="karyawan_id"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                required>
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2" required>
                                 <option value="">-- Pilih Karyawan --</option>
                                 @foreach($karyawans as $karyawan)
                                 <option value="{{ $karyawan->id }}">{{ $karyawan->nama }} ({{ $karyawan->tugas }})
@@ -200,10 +201,11 @@
                 </div>
 
                 <!-- Fingerprint Scanner -->
-                <div id="fingerprint-scanner"
+                <div id="fingerprint-scanner" role="button" tabindex="0" aria-label="Fingerprint Scanner"
                     class="w-28 h-28 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-105 hover:shadow-xl transition-all">
-                    <img src="/assets/img/sidikjari1.png" class="w-16 h-16">
+                    <img src="/assets/img/sidikjari1.png" class="w-16 h-16" alt="Fingerprint Icon">
                 </div>
+
 
                 <div id="izin-div" class="hidden mt-4">
                     <label class="block text-gray-700 mb-2 font-medium">Absen dengan izin</label>
@@ -231,6 +233,16 @@
         </div>
     </main>
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new TomSelect("#karyawan_id", {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "-- Pilih Karyawan --"
+        });
+    });
     document.addEventListener('DOMContentLoaded', () => {
         // ================= Jam real-time =================
         const dayEl = document.getElementById('current-day');
@@ -325,7 +337,10 @@
 
         // ================= Registrasi =================
         let selectedKaryawanId = @json($registrasiData['karyawan_id'] ?? null);
-        if (selectedKaryawanId) {
+        if (!selectedKaryawanId) selectedKaryawanId = localStorage.getItem('karyawan_id');
+        const isRegistered = localStorage.getItem('is_registered');
+
+        if (selectedKaryawanId && isRegistered) {
             formDiv.classList.add('hidden');
             fingerprintDiv.classList.remove('hidden');
             statusMsg.textContent = "Klik fingerprint untuk absen masuk / keluar";
@@ -373,12 +388,16 @@
                         fingerprintDiv.classList.remove('hidden');
                         statusMsg.textContent =
                             "Registrasi berhasil! Klik fingerprint untuk absen.";
+
+                        localStorage.setItem('is_registered', 'true');
+                        localStorage.setItem('karyawan_id', selectedKaryawanId);
+
                         const k = data.data.karyawan;
                         document.getElementById('karyawan-info').innerHTML = `
                     <div class="flex items-center gap-4 mb-8 bg-white text-gray-800 px-6 py-4 rounded-2xl shadow-lg shadow-sky-300 border border-sky-100 w-full">
                         <div class="w-14 h-14 bg-blue-500 text-white flex items-center justify-center rounded-full shadow-md shadow-sky-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.21.8 5.879 2.121M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.21.8 5.879 2.121M15 11a3 3 0 11-6 0 0 3 3 0z"/>
                             </svg>
                         </div>
                         <div>
@@ -391,47 +410,6 @@
                 }).catch(err => console.error(err));
         });
 
-        // ================= Submit Izin =================
-        submitIzinBtn.addEventListener('click', () => {
-            if (!izinSelect.value) return alert("Silakan pilih tipe izin!");
-            if (!selectedKaryawanId) return alert("Karyawan belum terpilih!");
-            const tandaTanganData = tandaTanganInput.value || signaturePad.toDataURL();
-            if (!tandaTanganData) return alert("Tanda tangan kosong!");
-            tandaTanganInput.value = tandaTanganData;
-            localStorage.setItem('tanda_tangan', tandaTanganData);
-
-            fetch("{{ route('absensi.izin') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        karyawan_id: selectedKaryawanId,
-                        tipe_izin: izinSelect.value,
-                        tanda_tangan: tandaTanganData
-                    })
-                }).then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotif(
-                            `✅ Izin "${izinSelect.value}" dicatat. Masih bisa absen masuk/keluar.`,
-                            'success');
-                        statusMsg.textContent =
-                            `✅ Izin "${izinSelect.value}" dicatat. Masih bisa absen masuk/keluar.`;
-                        izinDiv.classList.add('hidden');
-                    } else {
-                        statusMsg.textContent =
-                            `❌ Gagal kirim izin: ${data.message || 'Coba lagi'}`;
-                        showNotif(data.message || "Gagal kirim izin.", 'error');
-                    }
-                }).catch(err => {
-                    console.error(err);
-                    statusMsg.textContent = "❌ Terjadi kesalahan saat mengirim izin.";
-                    showNotif("Terjadi kesalahan saat mengirim izin.", 'error');
-                });
-        });
-
         // ================= Fingerprint =================
         scanner.addEventListener('click', () => {
             if (!selectedKaryawanId) return statusMsg.textContent = "Silakan pilih karyawan dulu!";
@@ -440,16 +418,27 @@
             tandaTanganInput.value = tandaTanganData;
             localStorage.setItem('tanda_tangan', tandaTanganData);
 
-            // Reset otomatis setelah keluar
             const last = localStorage.getItem('last_absensi');
-            if (last === 'keluar') {
-                statusMsg.textContent = "✅ Siap untuk absensi berikutnya!";
-                // warna default
-                scanner.style.backgroundColor = '#e5e7eb';
-                localStorage.removeItem('last_absensi');
-                return;
+
+            // Absen masuk
+            if (!last || last === 'keluar') {
+                localStorage.setItem('waktu_masuk', Date.now());
             }
 
+            // Absen keluar: cek minimal 8 jam (ubah ke 30 detik buat testing)
+            if (last === 'masuk') {
+                const waktuMasuk = localStorage.getItem('waktu_masuk');
+                if (waktuMasuk) {
+                    const selisih = Date.now() - parseInt(waktuMasuk);
+                    if (selisih < 5 * 60 * 60 * 1000) {
+                        // kalau mau test 30 detik, ganti dengan: if (selisih < 30 * 1000) {
+                        showNotif("❌ Belum 8 jam sejak absen masuk. Tidak bisa absen keluar.", "error");
+                        return;
+                    }
+                }
+            }
+
+            // lanjutkan proses fingerprint
             if (!navigator.geolocation) return alert("Geolocation tidak didukung browser ini.");
             statusMsg.textContent = "⏳ Mengambil lokasi...";
 
@@ -459,14 +448,14 @@
 
                 const kantorLat = -6.691640391234676;
                 const kantorLng = 106.88689131829916;
-                const radiusM = 100;
+                const radiusM = 30;
 
                 function getDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371000;
                     const dLat = (lat2 - lat1) * Math.PI / 180;
                     const dLon = (lon2 - lon1) * Math.PI / 180;
-                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math
-                        .cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) *
+                        Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
                     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
                     return R * c;
                 }
@@ -501,20 +490,26 @@
                     if (data.success) {
                         const tipe = data.data.waktu_keluar ? 'keluar' : 'masuk';
                         localStorage.setItem('last_absensi', tipe);
-                        // ubah warna sesuai tipe
+
                         if (tipe === 'masuk') {
-                            scanner.style.backgroundColor =
-                                '#ef4444'; // merah kalau belum keluar
-                            statusMsg.textContent =
-                                `✅ Absen masuk berhasil, belum absen keluar!`;
-                            showNotif("✅ Absen masuk berhasil, belum absen keluar!",
-                                'success');
+                            // IJO 2 detik → MERAH
+                            scanner.style.backgroundColor = '#22c55e';
+                            statusMsg.textContent = "✅ Absen masuk berhasil!";
+                            showNotif("✅ Absen masuk berhasil!", 'success');
+
+                            setTimeout(() => {
+                                scanner.style.backgroundColor = '#ef4444';
+                                statusMsg.textContent =
+                                    "⚠️ Anda belum absen keluar!";
+                            }, 2000);
+
                         } else {
-                            scanner.style.backgroundColor =
-                                '#22c55e'; // ijo kalau keluar
-                            statusMsg.textContent = `✅ Absen keluar berhasil!`;
+                            // IJO 2 detik → ABU-ABU
+                            scanner.style.backgroundColor = '#22c55e';
+                            statusMsg.textContent = "✅ Absen keluar berhasil!";
                             showNotif("✅ Absen keluar berhasil!", 'success');
-                            // reset otomatis ke warna default setelah 2 detik
+                            localStorage.removeItem('waktu_masuk');
+
                             setTimeout(() => {
                                 scanner.style.backgroundColor = '#e5e7eb';
                                 localStorage.removeItem('last_absensi');
@@ -558,6 +553,9 @@
             tandaTanganInput.value = '';
             localStorage.removeItem('tanda_tangan');
             localStorage.removeItem('last_absensi');
+            localStorage.removeItem('is_registered');
+            localStorage.removeItem('karyawan_id');
+            localStorage.removeItem('waktu_masuk');
             statusMsg.textContent = '';
             updateScannerColor();
 
@@ -570,6 +568,8 @@
         });
     });
     </script>
+
+
 
 
 
