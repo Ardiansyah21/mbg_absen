@@ -8,6 +8,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css','resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.0/dist/signature_pad.umd.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 
@@ -124,7 +126,6 @@
             </div>
             @endif
 
-            <!-- FORM REGISTRASI -->
             <div id="form-div" class="{{ $registrasiData ? 'hidden' : '' }}">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">📝 Form Registrasi Absensi</h2>
 
@@ -136,8 +137,7 @@
                         <div>
                             <label for="karyawan_id" class="block text-gray-700 mb-2 font-medium">Nama Karyawan</label>
                             <select id="karyawan_id" name="karyawan_id"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                required>
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2" required>
                                 <option value="">-- Pilih Karyawan --</option>
                                 @foreach($karyawans as $karyawan)
                                 <option value="{{ $karyawan->id }}">{{ $karyawan->nama }} ({{ $karyawan->tugas }})
@@ -200,10 +200,12 @@
                 </div>
 
                 <!-- Fingerprint Scanner -->
-                <div id="fingerprint-scanner"
+                <!-- Fingerprint Scanner -->
+                <div id="fingerprint-scanner" role="button" tabindex="0" aria-label="Fingerprint Scanner"
                     class="w-28 h-28 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-105 hover:shadow-xl transition-all">
-                    <img src="/assets/img/sidikjari1.png" class="w-16 h-16">
+                    <img src="/assets/img/sidikjari1.png" class="w-16 h-16" alt="Fingerprint Icon">
                 </div>
+
 
                 <div id="izin-div" class="hidden mt-4">
                     <label class="block text-gray-700 mb-2 font-medium">Absen dengan izin</label>
@@ -231,7 +233,17 @@
         </div>
     </main>
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    docudocument.addEventListener('DOMContentLoaded', function() {
+        new TomSelect("#karyawan_id", {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "-- Pilih Karyawan --"
+        });
+    });
+    ment.addEventListener('DOMContentLoaded', () => {
         // ================= Jam real-time =================
         const dayEl = document.getElementById('current-day');
         const timeEl = document.getElementById('current-time');
