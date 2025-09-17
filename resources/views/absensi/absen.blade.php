@@ -262,25 +262,6 @@
 
         toggleBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
 
-        // ================= Scroll halus navbar =================
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    const headerOffset = 80;
-                    const elementPosition = target.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: "smooth"
-                    });
-                    if (!mobileMenu.classList.contains('hidden')) mobileMenu.classList.add(
-                        'hidden');
-                }
-            });
-        });
-
         // ================= Signature Pad =================
         const canvas = document.getElementById('signature-pad');
         const signaturePad = new SignaturePad(canvas, {
@@ -315,9 +296,8 @@
         // ================= Notifikasi =================
         function showNotif(msg, type = 'success') {
             const notif = document.createElement('div');
-            notif.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 ${
-            type==='success'?'bg-green-500 text-white':'bg-red-500 text-white'
-        }`;
+            notif.className =
+                `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 ${type==='success'?'bg-green-500 text-white':'bg-red-500 text-white'}`;
             notif.textContent = msg;
             document.body.appendChild(notif);
             setTimeout(() => notif.remove(), 4000);
@@ -328,27 +308,39 @@
         if (!selectedKaryawanId) selectedKaryawanId = localStorage.getItem('karyawan_id');
         const isRegistered = localStorage.getItem('is_registered');
 
+        // 🔧 simpan per karyawan
+        let dataAbsen = JSON.parse(localStorage.getItem('dataAbsen')) || {};
+
         if (selectedKaryawanId && isRegistered) {
             formDiv.classList.add('hidden');
             fingerprintDiv.classList.remove('hidden');
             statusMsg.textContent = "Klik fingerprint untuk absen masuk / keluar";
+
+            const savedInfo = localStorage.getItem('karyawan_info');
+            if (savedInfo) document.getElementById('karyawan-info').innerHTML = savedInfo;
+            updateScannerColor();
         }
 
         // ================= Update Scanner Color =================
         function updateScannerColor() {
-            const lastAbsensi = localStorage.getItem('last_absensi');
-            if (!lastAbsensi) {
-                scanner.style.backgroundColor = '#e5e7eb';
+            if (!selectedKaryawanId) {
+                scanner.style.backgroundColor = '#facc15'; // default kuning
                 statusMsg.textContent = '';
-            } else if (lastAbsensi === 'masuk') {
-                scanner.style.backgroundColor = '#ef4444';
-                statusMsg.textContent = "⚠️ Anda belum absen keluar!";
-            } else if (lastAbsensi === 'keluar') {
-                scanner.style.backgroundColor = '#22c55e';
+                return;
+            }
+
+            const absen = dataAbsen[selectedKaryawanId];
+            if (!absen) {
+                scanner.style.backgroundColor = '#facc15'; // siap masuk
+                statusMsg.textContent = "Siap absen masuk!";
+            } else if (absen.last === 'masuk') {
+                scanner.style.backgroundColor = '#ef4444'; // harus keluar
+                statusMsg.textContent = "⚠ Anda belum absen keluar!";
+            } else if (absen.last === 'keluar') {
+                scanner.style.backgroundColor = '#facc15'; // default kuning
                 statusMsg.textContent = "✅ Anda sudah absen keluar.";
             }
         }
-        updateScannerColor();
 
         // ================= Submit Registrasi =================
         document.getElementById('absensi-form').addEventListener('submit', e => {
@@ -362,71 +354,63 @@
 
             const formData = new FormData(e.target);
             fetch(e.target.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        selectedKaryawanId = formData.get('karyawan_id');
-                        formDiv.classList.add('hidden');
-                        fingerprintDiv.classList.remove('hidden');
-                        statusMsg.textContent =
-                            "Registrasi berhasil! Klik fingerprint untuk absen.";
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    selectedKaryawanId = formData.get('karyawan_id');
+                    formDiv.classList.add('hidden');
+                    fingerprintDiv.classList.remove('hidden');
+                    statusMsg.textContent =
+                        "Registrasi berhasil! Klik fingerprint untuk absen.";
 
-                        localStorage.setItem('is_registered', 'true');
-                        localStorage.setItem('karyawan_id', selectedKaryawanId);
+                    localStorage.setItem('is_registered', 'true');
+                    localStorage.setItem('karyawan_id', selectedKaryawanId);
 
-                        const k = data.data.karyawan;
-                        document.getElementById('karyawan-info').innerHTML = `
-                    <div class="flex items-center gap-4 mb-8 bg-white text-gray-800 px-6 py-4 rounded-2xl shadow-lg shadow-sky-300 border border-sky-100 w-full">
-                        <div class="w-14 h-14 bg-blue-500 text-white flex items-center justify-center rounded-full shadow-md shadow-sky-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.21.8 5.879 2.121M15 11a3 3 0 11-6 0 0 3 3 0z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-lg font-bold">${k.nama}</p>
-                            <p class="text-sm text-gray-500">${k.tugas}</p>
-                        </div>
-                    </div>`;
-                        updateScannerColor();
-                    } else alert("Gagal registrasi: " + (data.message || "Coba lagi."));
-                }).catch(err => console.error(err));
+                    const k = data.data.karyawan;
+                    const infoHTML = `
+                <div class="flex items-center gap-4 mb-8 bg-white text-gray-800 px-6 py-4 rounded-2xl shadow-lg border w-full">
+                    <div class="w-14 h-14 bg-blue-500 text-white flex items-center justify-center rounded-full shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.21.8 5.879 2.121M15 11a3 3 0 11-6 0 0 3 3 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-lg font-bold">${k.nama}</p>
+                        <p class="text-sm text-gray-500">${k.tugas}</p>
+                    </div>
+                </div>`;
+                    document.getElementById('karyawan-info').innerHTML = infoHTML;
+                    localStorage.setItem('karyawan_info', infoHTML);
+                    updateScannerColor();
+                } else alert("Gagal registrasi: " + (data.message || "Coba lagi."));
+            }).catch(err => console.error(err));
         });
 
         // ================= Fingerprint =================
         scanner.addEventListener('click', () => {
             if (!selectedKaryawanId) return statusMsg.textContent = "Silakan pilih karyawan dulu!";
+
             const tandaTanganData = tandaTanganInput.value || signaturePad.toDataURL();
             if (!tandaTanganData) return alert("Tanda tangan kosong!");
             tandaTanganInput.value = tandaTanganData;
             localStorage.setItem('tanda_tangan', tandaTanganData);
 
-            const last = localStorage.getItem('last_absensi');
+            const absen = dataAbsen[selectedKaryawanId] || {};
 
-            // Absen masuk
-            if (!last || last === 'keluar') {
-                localStorage.setItem('waktu_masuk', Date.now());
-            }
+            if (!absen.last || absen.last === 'keluar') absen.waktu_masuk = Date.now();
 
-            // Absen keluar: cek minimal 8 jam (ubah ke 30 detik buat testing)
-            if (last === 'masuk') {
-                const waktuMasuk = localStorage.getItem('waktu_masuk');
-                if (waktuMasuk) {
-                    const selisih = Date.now() - parseInt(waktuMasuk);
-                    if (selisih < 5 * 60 * 60 * 1000) {
-                        // kalau mau test 30 detik, ganti dengan: if (selisih < 30 * 1000) {
-                        showNotif("❌ Belum 8 jam sejak absen masuk. Tidak bisa absen keluar.", "error");
-                        return;
-                    }
+            if (absen.last === 'masuk') {
+                const selisih = Date.now() - (absen.waktu_masuk || 0);
+                if (selisih < 5 * 60 * 60 * 1000) {
+                    showNotif("❌ Belum 8 jam sejak absen masuk. Tidak bisa absen keluar.", "error");
+                    return;
                 }
             }
 
-            // lanjutkan proses fingerprint
             if (!navigator.geolocation) return alert("Geolocation tidak didukung browser ini.");
             statusMsg.textContent = "⏳ Mengambil lokasi...";
 
@@ -436,7 +420,7 @@
 
                 const kantorLat = -6.691640391234676;
                 const kantorLng = 106.88689131829916;
-                const radiusM = 15;
+                const radiusM = 200;
 
                 function getDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371000;
@@ -477,30 +461,28 @@
                 }).then(res => res.json()).then(data => {
                     if (data.success) {
                         const tipe = data.data.waktu_keluar ? 'keluar' : 'masuk';
-                        localStorage.setItem('last_absensi', tipe);
+                        absen.last = tipe;
+                        if (tipe === 'keluar') delete absen.waktu_masuk;
+                        dataAbsen[selectedKaryawanId] = absen;
+                        localStorage.setItem('dataAbsen', JSON.stringify(dataAbsen));
 
                         if (tipe === 'masuk') {
-                            // IJO 2 detik → MERAH
+                            // klik masuk → ijo 2 detik → merah
                             scanner.style.backgroundColor = '#22c55e';
                             statusMsg.textContent = "✅ Absen masuk berhasil!";
                             showNotif("✅ Absen masuk berhasil!", 'success');
-
                             setTimeout(() => {
                                 scanner.style.backgroundColor = '#ef4444';
                                 statusMsg.textContent =
-                                    "⚠️ Anda belum absen keluar!";
+                                    "⚠ Anda belum absen keluar!";
                             }, 2000);
-
                         } else {
-                            // IJO 2 detik → ABU-ABU
+                            // klik keluar → ijo 2 detik → kuning
                             scanner.style.backgroundColor = '#22c55e';
                             statusMsg.textContent = "✅ Absen keluar berhasil!";
                             showNotif("✅ Absen keluar berhasil!", 'success');
-                            localStorage.removeItem('waktu_masuk');
-
                             setTimeout(() => {
-                                scanner.style.backgroundColor = '#e5e7eb';
-                                localStorage.removeItem('last_absensi');
+                                scanner.style.backgroundColor = '#facc15';
                                 statusMsg.textContent =
                                     "Siap untuk absensi berikutnya!";
                             }, 2000);
@@ -519,8 +501,7 @@
                 });
 
             }, err => {
-                statusMsg.textContent =
-                    "❌ Tidak dapat mendeteksi lokasi. Pastikan GPS / Location aktif.";
+                statusMsg.textContent = "❌ Tidak dapat mendeteksi lokasi. Pastikan GPS aktif.";
                 scanner.style.backgroundColor = '#ef4444';
                 showNotif("Tidak dapat mendeteksi lokasi.", 'error');
                 console.error(err);
@@ -531,19 +512,19 @@
             });
         });
 
+
         // ================= Reset =================
         resetBtn.addEventListener('click', () => {
             selectedKaryawanId = null;
             formDiv.classList.remove('hidden');
             fingerprintDiv.classList.add('hidden');
             document.getElementById('karyawan_id').value = '';
-            signaturePad.clear();
             tandaTanganInput.value = '';
             localStorage.removeItem('tanda_tangan');
-            localStorage.removeItem('last_absensi');
             localStorage.removeItem('is_registered');
             localStorage.removeItem('karyawan_id');
-            localStorage.removeItem('waktu_masuk');
+            localStorage.removeItem('karyawan_info');
+
             statusMsg.textContent = '';
             updateScannerColor();
 
@@ -554,9 +535,9 @@
                 }
             });
         });
+
     });
     </script>
-
 
 
 
