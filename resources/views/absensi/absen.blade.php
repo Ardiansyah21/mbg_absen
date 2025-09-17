@@ -420,7 +420,7 @@
 
                 const kantorLat = -6.691640391234676;
                 const kantorLng = 106.88689131829916;
-                const radiusM = 200;
+                const radiusM = 30;
 
                 function getDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371000;
