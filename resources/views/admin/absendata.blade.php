@@ -73,113 +73,83 @@
                         <th class="px-3 py-2">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class=" divide-y divide-gray-200">
                     @php $no = 1; @endphp
-
                     @foreach($sudahAbsen as $karyawan)
-                    @php
-                    // Urutan tugas prioritas
-                    $urutanTugas = [
-                    'Asisten Lapangan',
-                    'Persiapan', 'Pengolahan', 'Pemorsian',
-                    'Distribusi', 'Kebersihan', 'Pencucian',
-                    'Koordinator'
-                    ];
+                    @foreach($karyawan->absensis as $absensi)
+                    <tr class="hover:bg-sky-50 transition">
+                        <td class="px-3 py-2">{{ $no++ }}</td>
+                        <td class="px-3 py-2 font-medium">{{ $karyawan->nama }}</td>
+                        <td class="px-3 py-2">{{ $karyawan->tugas ?? '-' }}</td>
+                        <td class="px-3 py-2">{{ $absensi->status }}</td>
+                        <td class="px-3 py-2">{{ $absensi->hari }},
+                            {{ \Carbon\Carbon::parse($absensi->tanggal)->translatedFormat('d F Y') }}</td>
+                        <td class="px-3 py-2">{{ $absensi->waktu_masuk }}</td>
+                        <td class="px-3 py-2">{{ $absensi->waktu_keluar ?? '-' }}</td>
+                        <td class="px-3 py-2">
+                            @if($absensi->waktu_masuk && $absensi->waktu_keluar)
+                            @php
+                            $masuk = \Carbon\Carbon::parse($absensi->waktu_masuk);
+                            $keluar = \Carbon\Carbon::parse($absensi->waktu_keluar);
+                            $diff = $keluar->diff($masuk);
+                            $jamKerja = $diff->h + ($diff->d * 24);
+                            $menitKerja = $diff->i;
+                            $detikKerja = $diff->s;
+                            @endphp
+                            {{ $jamKerja }} jam {{ $menitKerja }} menit {{ $detikKerja }} detik
+                            @else
+                            -
+                            @endif
+                        </td>
+                        <td class="px-3 py-2">
+                            @if($absensi->tanda_tangan)
+                            <img src="{{ $absensi->tanda_tangan }}" alt="Tanda Tangan"
+                                class="w-16 h-12 object-contain rounded shadow">
+                            @else
+                            -
+                            @endif
+                        </td>
+                        <td class="px-3 py-2">
+                            @if($absensi->nama_pengganti)
+                            <div>
+                                <p><span class="font-medium">Nama:</span> {{ $absensi->nama_pengganti }}</p>
+                                <p><span class="font-medium">Ket:</span> Hadir menggantikan {{ $karyawan->nama }}</p>
+                            </div>
+                            @else
+                            -
+                            @endif
+                        </td>
 
-                    // Ambil absensi dan ubah ke array untuk bisa diurutkan
-                    $absensis = $karyawan->absensis->toArray();
+                        <td class="px-3 py-2 text-center sticky right-0 bg-white">
+                            <div class="flex flex-col gap-2 items-center">
+                                <form action="{{ route('absensi.destroy', $absensi->id) }}" method="POST"
+                                    onsubmit="return confirm('Yakin mau hapus?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs shadow w-24">Hapus</button>
+                                </form>
+                                <a href="javascript:void(0)" onclick="openDuplikatModal({{ $absensi->id }})"
+                                    class="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-xs shadow w-24 text-center">
+                                    Duplikat
+                                </a>
 
-                    // Urutkan berdasarkan posisi di $urutanTugas
-                    usort($absensis, function($a, $b) use ($urutanTugas) {
-                    $posA = array_search($a['tugas'], $urutanTugas);
-                    $posB = array_search($b['tugas'], $urutanTugas);
-                    $posA = $posA === false ? 999 : $posA;
-                    $posB = $posB === false ? 999 : $posB;
-                    return $posA <=> $posB;
-                        });
-                        @endphp
-
-                        @foreach($absensis as $absensi)
-                        <tr class="hover:bg-sky-50 transition">
-                            <td class="px-3 py-2">{{ $no++ }}</td>
-                            <td class="px-3 py-2 font-medium">{{ $karyawan->nama }}</td>
-                            <td class="px-3 py-2">{{ $karyawan->tugas ?? '-' }}</td>
-                            <td class="px-3 py-2">{{ $absensi['status'] }}</td>
-                            <td class="px-3 py-2">{{ $absensi['hari'] }},
-                                {{ \Carbon\Carbon::parse($absensi['tanggal'])->translatedFormat('d F Y') }}
-                            </td>
-                            <td class="px-3 py-2">{{ $absensi['waktu_masuk'] }}</td>
-                            <td class="px-3 py-2">{{ $absensi['waktu_keluar'] ?? '-' }}</td>
-                            <td class="px-3 py-2">
-                                @if($absensi['waktu_masuk'] && $absensi['waktu_keluar'])
-                                @php
-                                $masuk = \Carbon\Carbon::parse($absensi['waktu_masuk']);
-                                $keluar = \Carbon\Carbon::parse($absensi['waktu_keluar']);
-                                $diff = $keluar->diff($masuk);
-                                $jamKerja = $diff->h + ($diff->d * 24);
-                                $menitKerja = $diff->i;
-                                $detikKerja = $diff->s;
-                                @endphp
-                                {{ $jamKerja }} jam {{ $menitKerja }} menit {{ $detikKerja }} detik
-                                @else
-                                -
-                                @endif
-                            </td>
-                            <td class="px-3 py-2">
-                                @if($absensi['tanda_tangan'])
-                                <img src="{{ $absensi['tanda_tangan'] }}" alt="Tanda Tangan"
-                                    class="w-16 h-12 object-contain rounded shadow">
-                                @else
-                                -
-                                @endif
-                            </td>
-                            <td class="px-3 py-2">
-                                @if(!empty($absensi['nama_pengganti']))
-                                <div>
-                                    <p><span class="font-medium">Nama:</span> {{ $absensi['nama_pengganti'] }}</p>
-                                    <p><span class="font-medium">Ket:</span> Hadir menggantikan {{ $karyawan->nama }}
-                                    </p>
-                                </div>
-                                @else
-                                -
-                                @endif
-                            </td>
-                            <td class="px-3 py-2 text-center sticky right-0 bg-white">
-                                <div class="flex flex-col gap-2 items-center">
-                                    <form action="{{ route('absensi.destroy', $absensi['id']) }}" method="POST"
-                                        onsubmit="return confirm('Yakin mau hapus?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs shadow w-24">
-                                            Hapus
-                                        </button>
-                                    </form>
-                                    <a href="javascript:void(0)" onclick="openDuplikatModal({{ $absensi['id'] }})"
-                                        class="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-xs shadow w-24 text-center">
-                                        Duplikat
-                                    </a>
-
-                                    <a href="javascript:void(0)" onclick="openModal({{ $absensi['id'] }})"
-                                        class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs shadow w-24 text-center">
-                                        Pengganti
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                        @endforeach
-
-                        @if($sudahAbsen->isEmpty())
-                        <tr>
-                            <td colspan="11" class="text-center py-4">Belum ada yang absen di tanggal ini.</td>
-                        </tr>
-                        @endif
+                                <a href="javascript:void(0)" onclick="openModal({{ $absensi->id }})"
+                                    class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs shadow w-24 text-center">Pengganti</a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                    @endforeach
+                    @if($sudahAbsen->isEmpty())
+                    <tr>
+                        <td colspan="11" class="text-center py-4">Belum ada yang absen di tanggal ini.</td>
+                    </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
     </div>
-
 
 
 
